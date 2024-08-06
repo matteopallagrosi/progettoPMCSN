@@ -1,9 +1,12 @@
 package it.metro.events;
 
+import it.metro.centers.Center;
+
 public class Event {
 
     private EventType type;     //tipologia dell'evento (arrivo, completamento...)
     private double time;        //tempo di simulazione in cui avviene l'evento
+    private Center center;       //centro a cui è destinato l'evento
 
     public Event(EventType type, double time) {
         this.type = type;
@@ -24,5 +27,13 @@ public class Event {
 
     public void setTime(double time) {
         this.time = time;
+    }
+
+    public Center getCenter() {
+        return center;
+    }
+
+    public void setCenter(Center center) {
+        this.center = center;
     }
 }
