@@ -16,12 +16,7 @@ public class ElectronicTicketCenter extends Center {
 
     @Override
     public double getService() {
-        r.rngs.selectStream(2);
+        r.rngs.selectStream(1);
         return (r.uniform(2.0, 10.0));
-    }
-
-    @Override
-    public void processDeparture() {
-
     }
 }

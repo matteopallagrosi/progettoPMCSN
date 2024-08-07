@@ -18,14 +18,4 @@ public class TicketCenter extends Center {
     public double getService() {
         return 1.0;
     }
-
-    @Override
-    public void processArrival() {
-
-    }
-
-    @Override
-    public void processDeparture() {
-
-    }
 }

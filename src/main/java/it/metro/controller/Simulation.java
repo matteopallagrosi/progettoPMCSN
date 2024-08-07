@@ -5,6 +5,7 @@ import it.metro.events.Event;
 import it.metro.events.EventType;
 import it.metro.utils.Rngs;
 import it.metro.utils.Rvgs;
+import it.metro.utils.Server;
 import it.metro.utils.Time;
 
 import java.text.DecimalFormat;
@@ -33,7 +34,7 @@ public class Simulation {
 
     //Inizializza la configurazione dei vari centri
     private void initCenters() {
-        electronicTicketCenter = new ElectronicTicketCenter(2, v);
+        electronicTicketCenter = new ElectronicTicketCenter(4, v);
         ticketCenter = new TicketCenter(2, v);
         turnstilesCenter = new TurnstilesCenter(2, v);
         ticketInspectorsCenter = new TicketInspectorsCenter(2, v);
@@ -59,7 +60,7 @@ public class Simulation {
 
     //genera il centro a cui l'utente è diretto all'arrivo (tornelli se abbonato, oppure alle casse automatiche oppure alle casse fisiche)
     private Center getEventUser() {
-        r.selectStream(1);
+        r.selectStream(2);
         double random = r.random();
         if (random <= 0.33) {
             return turnstilesCenter;                //pA --> utente abbonato che si dirige ai tornelli
@@ -87,6 +88,14 @@ public class Simulation {
         return arrival;
     }
 
+    //prende in input centro e server per cui produrre l'evento di completamento
+    private Event generateDepartureEvent(Center center, Server server) {
+        Event departure = new Event(EventType.DEPARTURE, t.current + center.lastService);
+        departure.setCenter(center);
+        departure.setServer(server);
+        return departure;
+    }
+
     private void run() {
         this.initGenerators();
         this.initCenters();
@@ -98,7 +107,7 @@ public class Simulation {
         //produce il primo evento, che è necessariamente un arrivo
         events.add(generateArrivalEvent());
 
-        //procede a processare gli eventi, finchè non si supera il "close the door" e la lista degli eventi non viene svuotata
+        //procede a processare gli eventi, finché non si supera il "close the door" e la lista degli eventi non viene svuotata
         while (t.current < STOP || !events.isEmpty()) {
             //estraggo il prossimo evento (in ordine di clock di simulazione)
             Event event = events.poll();
@@ -106,7 +115,7 @@ public class Simulation {
             //recupera il centro a cui è diretto l'evento
             Center currentCenter = event.getCenter();
 
-            //aggiorna le statistiche del centro interessato dall'evento
+            //aggiorna le statistiche del centro interessato dall'evento (e aggiorna l'evento corrente)
             currentCenter.updateStatistics(event);
 
             //aggiorna il clock di simulazione
@@ -114,7 +123,7 @@ public class Simulation {
 
             //processa l'evento di arrivo
             if (event.getType() == EventType.ARRIVAL) {
-                currentCenter.processArrival();
+                int serverDeparture = currentCenter.processArrival();
 
                 //produce l'arrivo successivo
                 Event newArrival = generateArrivalEvent();
@@ -124,12 +133,23 @@ public class Simulation {
                 else {
                     events.add(newArrival);
                 }
+
+                //se il job è stato mandato in servizio produce l'evento di completamento
+                if (serverDeparture != -1) {
+                    events.add(generateDepartureEvent(currentCenter, currentCenter.servers[serverDeparture]));
+                }
             }
             //processa l'evento di completamento
             else if (event.getType() == EventType.DEPARTURE) {
-                currentCenter.processDeparture();
+                int generateDeparture = currentCenter.processDeparture();
+                if (generateDeparture != -1) {
+                    events.add(generateDepartureEvent(currentCenter, event.getServer()));
+                }
             }
         }
+
+        //stampa le statistiche
+        printCentersStatistics();
 
     }
 
@@ -142,22 +162,25 @@ public class Simulation {
     //stampa le statistiche di un centro
     private  void printStatistics(Center center) {
         DecimalFormat f = new DecimalFormat("###0.00");
+        DecimalFormat g = new DecimalFormat("###0.000");
 
-        System.out.println("\nfor " + center.completedJobs + " jobs");
-        System.out.println("   average interarrival time =   " +
-                f.format(center.lastArrival.getTime() / center.completedJobs));
-        System.out.println("   average wait ............ =   " +
-                f.format(center.area.node / center.completedJobs));
-        System.out.println("   average delay ........... =   " +
-                f.format(center.area.queue / center.completedJobs));
-        System.out.println("   average service time .... =   " +
-                f.format(center.area.service / center.completedJobs));
-        System.out.println("   average # in the node ... =   " +
-                f.format(center.area.node / t.current));
-        System.out.println("   average # in the queue .. =   " +
-                f.format(center.area.queue / t.current));
-        System.out.println("   utilization ............. =   " +
-                f.format(center.area.service / t.current));
+        System.out.println("\nfor " + center.completedJobs + " jobs the service node statistics are:\n");
+        System.out.println("  avg interarrivals .. =   " + f.format(t.last / center.completedJobs));
+        System.out.println("  avg wait ........... =   " + f.format(center.area.node / center.completedJobs));
+        System.out.println("  avg # in node ...... =   " + f.format(center.area.node / t.current));
+        System.out.println("  avg delay .......... =   " + f.format(center.area.queue / center.completedJobs));
+        System.out.println("  avg # in queue ..... =   " + f.format(center.area.queue / t.current));
+
+
+        System.out.println("\nthe server statistics are:\n");
+        System.out.println("    server     utilization     avg service      share");
+        for (int s = 0; s < center.numServer; s++) {
+            System.out.print("       " + s + "          " + g.format(center.servers[s].service / t.current) + "            ");
+            System.out.println(f.format(center.servers[s].service / center.servers[s].served) + "         " + g.format(center.servers[s].served / (double)center.completedJobs));
+        }
+        //share = percentuale di job processati da quel server sul totale
+
+        System.out.println("");
     }
 
 }
