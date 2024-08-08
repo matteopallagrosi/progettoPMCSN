@@ -15,7 +15,8 @@ public class Simulation {
 
     private Queue<Event> events;                            //lista che tiene traccia degli eventi generati durante la simulazione
     private static double arrival = 0;
-    static double STOP    = 20000.0;                        //"close the door" --> il flusso di arrivo viene interrotto
+    static double STOP    = 2000000.0;                       //"close the door" --> il flusso di arrivo viene interrotto
+    public boolean closeTheDoor = false;
     private Time t;                                         //clock di simulazione
     private Rngs r;                                         //generatore di valori randomici Uniform(0,1)
     private Rvgs v;                                         //generatore di variate aleatorie
@@ -60,7 +61,7 @@ public class Simulation {
 
     //genera il centro a cui l'utente è diretto all'arrivo (tornelli se abbonato, oppure alle casse automatiche oppure alle casse fisiche)
     private Center getEventUser() {
-        r.selectStream(2);
+        /*r.selectStream(2);
         double random = r.random();
         if (random <= 0.33) {
             return turnstilesCenter;                //pA --> utente abbonato che si dirige ai tornelli
@@ -70,13 +71,14 @@ public class Simulation {
         }
         else {
             return ticketCenter;                    //pF --> utente si dirige verso biglietteria fisica
-        }
+        }*/
+        return turnstilesCenter;
     }
 
     //genera il prossimo istante di arrivo (arrivi random = tempo di interarr. esp.)
     private double getArrival() {
         r.selectStream(0);
-        arrival += v.exponential(2.0);
+        arrival += v.exponential(0.125);
         return (arrival);
     }
 
@@ -106,9 +108,10 @@ public class Simulation {
 
         //produce il primo evento, che è necessariamente un arrivo
         events.add(generateArrivalEvent());
+        int i = 0;
 
         //procede a processare gli eventi, finché non si supera il "close the door" e la lista degli eventi non viene svuotata
-        while (t.current < STOP || !events.isEmpty()) {
+        while (!closeTheDoor || !events.isEmpty()) {
             //estraggo il prossimo evento (in ordine di clock di simulazione)
             Event event = events.poll();
 
@@ -128,7 +131,8 @@ public class Simulation {
                 //produce l'arrivo successivo
                 Event newArrival = generateArrivalEvent();
                 if (newArrival.getTime() > STOP) {
-                    t.last = newArrival.getTime();
+                    t.last = t.current;
+                    closeTheDoor = true;
                 }
                 else {
                     events.add(newArrival);
@@ -146,6 +150,7 @@ public class Simulation {
                     events.add(generateDepartureEvent(currentCenter, event.getServer()));
                 }
             }
+            i++;
         }
 
         //stampa le statistiche
@@ -159,6 +164,8 @@ public class Simulation {
         electronicTicketCenter.printStatistics(t);
         System.out.println("Ticket Center:");
         ticketCenter.printStatistics(t);
+        System.out.println("TurnstilesCenter");
+        turnstilesCenter.printStatistics(t);
     }
 
 }

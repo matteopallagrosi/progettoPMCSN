@@ -1,31 +1,33 @@
 package it.metro.centers;
 
 import it.metro.events.Event;
+import it.metro.utils.Area;
 import it.metro.utils.Rvgs;
 import it.metro.utils.Server;
 import it.metro.utils.Time;
 
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 //Multi Server multi queue Center (like frequency division multiplexing system)
 //Per ogni server c'è una coda a lui dedicata (quindi numero code = numServer)
-public class MsmqCenter extends Center {
+public abstract class MsmqCenter extends Center {
 
     public int[] queues;            //tiene traccia della popolazione in ogni coda del centro
 
     public MsmqCenter(int id, int numServer, Rvgs v) {
         super(id, numServer, v);
         queues = new int[numServer];
+        this.area = new Area[numServer];
+        for (int i = 0; i < numServer; i++) {
+            this.area[i] = new Area();
+        }
     }
 
     @Override
     public Center getNextCenter() {
         return null;
-    }
-
-    @Override
-    public double getService() {
-        return 0;
     }
 
     public int processArrival() {
@@ -34,9 +36,9 @@ public class MsmqCenter extends Center {
         //se è disponibile un server, il job viene immediatamente servito
         //ritorna l'indice del server per cui deve essere prodotto un tempo di completamento, altrimenti -1 se job va in coda
         if (isSomeServerIdle()) {
-            lastService = getService();
             int serverIndex = findIdleServer();
             Server selectedServer = servers[serverIndex];
+            lastService = generateService(serverIndex);
             selectedServer.service += lastService;
             selectedServer.served++;
             selectedServer.idle = false;
@@ -59,7 +61,7 @@ public class MsmqCenter extends Center {
         //se è presente almeno un job nella coda del server in cui c'è stato il completamento, questo viene prelevato e mandato in servizio in questo server
         if (queues[currentEvent.getServer().id] > 0) {
             queues[currentEvent.getServer().id]--;
-            lastService = getService();
+            lastService = generateService(currentEvent.getServer().id);
             currentEvent.getServer().service += lastService;
             currentEvent.getServer().served++;
             //il controller produce un evento di completamento
@@ -75,13 +77,15 @@ public class MsmqCenter extends Center {
 
     @Override
     public void updateStatistics(Event newEvent) {
-        int currentQueue = newEvent.getServer().id;
-        int jobsInService = (newEvent.getServer().idle) ?  1 : 0;
-        if ((queues[currentQueue] + jobsInService) > 0) {
-            double delta = (newEvent.getTime() - currentEvent.getTime());
-            area[currentQueue].node    += delta * (queues[currentQueue] + jobsInService);
-            area[currentQueue].queue   += delta * (queues[currentQueue]);
-            area[currentQueue].service += delta;
+        for (Server server : servers) {
+            int currentQueue = server.id;
+            int jobsInService = (!server.idle) ? 1 : 0;
+            if ((queues[currentQueue] + jobsInService) > 0) {
+                double delta = (newEvent.getTime() - currentEvent.getTime());
+                area[currentQueue].node += delta * (queues[currentQueue] + 1);
+                area[currentQueue].queue += delta * (queues[currentQueue]);
+                area[currentQueue].service += delta;
+            }
         }
 
         //aggiorna l'evento corrente per il centro
@@ -99,6 +103,7 @@ public class MsmqCenter extends Center {
             System.out.println("Queue + Server " + i + ":");
             System.out.println("  avg interarrivals .. =   " + f.format(t.last / servers[i].served));
             System.out.println("  avg wait ........... =   " + f.format(area[i].node / servers[i].served));
+            System.out.println("serviti: " + servers[i].served);
             System.out.println("  avg # in node ...... =   " + f.format(area[i].node / t.current));
             System.out.println("  avg delay .......... =   " + f.format(area[i].queue / servers[i].served));
             System.out.println("  avg # in queue ..... =   " + f.format(area[i].queue / t.current));
@@ -129,5 +134,24 @@ public class MsmqCenter extends Center {
             }
         }
         return false;
+    }
+
+    private double generateService(int serverIndex) {
+        v.rngs.selectStream(5 + serverIndex);
+        return getService();
+    }
+
+    //seleziona tra quelli liberi un server casuale con equa probabilità
+    @Override
+    protected int findIdleServer() {
+        List<Server> serversIdle = new ArrayList<>();
+        for (Server server : servers) {
+            if (server.idle) {
+                serversIdle.add(server);
+            }
+        }
+        v.rngs.selectStream(15);
+        int selectedServerIndex = (int)v.equilikely(0, serversIdle.size()-1);
+        return serversIdle.get(selectedServerIndex).id;
     }
 }

@@ -4,17 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Terminata simulazione centro 1">
-      <change afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MslsCenter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MssqCenter.java" afterDir="false" />
+    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Refactoring entities and working on TurstilesCenter">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/Center.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/Center.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElectronicTicketCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElectronicTicketCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElevatorsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElevatorsCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketInspectorsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketInspectorsCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TurnstilesCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TurnstilesCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/utils/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/utils/Server.java" afterDir="false" />
@@ -56,27 +49,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.Simulation.executor&quot;: &quot;Run&quot;,
-    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/home/matteo/IdeaProjects/progettoPMCSN/src/main/java/it/metro/utils&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.Simulation.executor": "Run",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "git-widget-placeholder": "master",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/home/matteo/IdeaProjects/progettoPMCSN/src/main/java/it/metro/utils",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "advanced.settings",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/java/it/metro/utils" />
@@ -126,7 +119,9 @@
       <workItem from="1722959724352" duration="1966000" />
       <workItem from="1723020662538" duration="3162000" />
       <workItem from="1723033881883" duration="12686000" />
-      <workItem from="1723107151025" duration="6687000" />
+      <workItem from="1723107151025" duration="7890000" />
+      <workItem from="1723122876942" duration="1771000" />
+      <workItem from="1723130404943" duration="9880000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -160,7 +155,15 @@
       <option name="project" value="LOCAL" />
       <updated>1723039402812</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="Refactoring entities and working on TurstilesCenter">
+      <option name="closed" value="true" />
+      <created>1723114463082</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1723114463082</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -183,6 +186,7 @@
     <MESSAGE value="Aggiunti centri, librerie, inizio" />
     <MESSAGE value="Iniziato controller simulazione" />
     <MESSAGE value="Terminata simulazione centro 1" />
-    <option name="LAST_COMMIT_MESSAGE" value="Terminata simulazione centro 1" />
+    <MESSAGE value="Refactoring entities and working on TurstilesCenter" />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactoring entities and working on TurstilesCenter" />
   </component>
 </project>

@@ -16,6 +16,7 @@ public class TurnstilesCenter extends MsmqCenter {
 
     @Override
     public double getService() {
-        return 1.0;
+        //return (v.uniform(2.0, 10.0));
+        return v.exponential(0.2);
     }
 }
