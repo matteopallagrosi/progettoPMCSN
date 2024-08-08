@@ -3,10 +3,10 @@ package it.metro.centers;
 import it.metro.utils.Rvgs;
 
 //rappresenta il centro con gli ascensori per raggiungere la banchina
-public class ElevatorsCenter extends Center {
+public class ElevatorsCenter extends MssqCenter {
 
-    public ElevatorsCenter(int numServer, Rvgs r) {
-        super(5, numServer, r);
+    public ElevatorsCenter(int numServer, Rvgs v) {
+        super(5, numServer, v);
     }
 
     @Override

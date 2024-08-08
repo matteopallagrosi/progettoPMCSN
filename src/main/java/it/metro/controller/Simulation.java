@@ -65,11 +65,11 @@ public class Simulation {
         if (random <= 0.33) {
             return turnstilesCenter;                //pA --> utente abbonato che si dirige ai tornelli
         }
-        else if (random > 0.33 && random < 0.66) {
+        else if (random > 0.33 && random <= 0.83) {
             return electronicTicketCenter;          //pB --> utente si dirige verso biglietteria automatica
         }
         else {
-            return ticketCenter;                    //pC --> utente si dirige verso biglietteria fisica
+            return ticketCenter;                    //pF --> utente si dirige verso biglietteria fisica
         }
     }
 
@@ -155,32 +155,10 @@ public class Simulation {
 
     //stampa le statistiche di ogni centro
     private void printCentersStatistics() {
-        System.out.println("Electronic Ticket Center:\n");
-        printStatistics(electronicTicketCenter);
-    }
-
-    //stampa le statistiche di un centro
-    private  void printStatistics(Center center) {
-        DecimalFormat f = new DecimalFormat("###0.00");
-        DecimalFormat g = new DecimalFormat("###0.000");
-
-        System.out.println("\nfor " + center.completedJobs + " jobs the service node statistics are:\n");
-        System.out.println("  avg interarrivals .. =   " + f.format(t.last / center.completedJobs));
-        System.out.println("  avg wait ........... =   " + f.format(center.area.node / center.completedJobs));
-        System.out.println("  avg # in node ...... =   " + f.format(center.area.node / t.current));
-        System.out.println("  avg delay .......... =   " + f.format(center.area.queue / center.completedJobs));
-        System.out.println("  avg # in queue ..... =   " + f.format(center.area.queue / t.current));
-
-
-        System.out.println("\nthe server statistics are:\n");
-        System.out.println("    server     utilization     avg service      share");
-        for (int s = 0; s < center.numServer; s++) {
-            System.out.print("       " + s + "          " + g.format(center.servers[s].service / t.current) + "            ");
-            System.out.println(f.format(center.servers[s].service / center.servers[s].served) + "         " + g.format(center.servers[s].served / (double)center.completedJobs));
-        }
-        //share = percentuale di job processati da quel server sul totale
-
-        System.out.println("");
+        System.out.println("Electronic Ticket Center:");
+        electronicTicketCenter.printStatistics(t);
+        System.out.println("Ticket Center:");
+        ticketCenter.printStatistics(t);
     }
 
 }
