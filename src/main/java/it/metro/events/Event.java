@@ -9,6 +9,15 @@ public class Event {
     private double time;        //tempo di simulazione in cui avviene l'evento
     private Center center;      //centro a cui è destinato l'evento
     private Server server;      //server di quel centro a cui è destinato l'evento (in caso di completamento)
+    private boolean external = false;   //tiene traccia per gli eventi di arrivo se sono esterni o conseguenti a un completamento
+
+    public boolean isExternal() {
+        return external;
+    }
+
+    public void setExternal(boolean external) {
+        this.external = external;
+    }
 
     public Event(EventType type, double time) {
         this.type = type;

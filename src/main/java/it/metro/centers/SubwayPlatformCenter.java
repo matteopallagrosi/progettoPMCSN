@@ -10,8 +10,8 @@ public class SubwayPlatformCenter extends MssqCenter {
     }
 
     @Override
-    public Center getNextCenter() {
-        return null;
+    public int getNextCenter() {
+        return 0;
     }
 
     @Override

@@ -10,14 +10,14 @@ public class TicketCenter extends MssqCenter {
     }
 
     @Override
-    public Center getNextCenter() {
-        return null;
+    public int getNextCenter() {
+        return 3;
     }
 
     @Override
     public double getService() {
-        v.rngs.selectStream(3);
+        v.rngs.selectStream(100);
         //return (v.uniform(2.0, 10.0));
-        return v.exponential(5);
+        return v.exponential(3.33);
     }
 }

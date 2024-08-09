@@ -31,7 +31,7 @@ public abstract class Center {
     }
 
     //ritorna il centro successivo (il raggiungimento del centro successivo può essere probabilistico)
-    public abstract Center getNextCenter();
+    public abstract int getNextCenter();
 
     public abstract double getService();
 

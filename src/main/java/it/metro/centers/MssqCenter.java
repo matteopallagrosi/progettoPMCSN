@@ -79,7 +79,7 @@ public abstract class MssqCenter extends Center {
     }
 
     public void printStatistics() {
-        DecimalFormat f = new DecimalFormat("###0.00");
+        DecimalFormat f = new DecimalFormat("###0.000");
         DecimalFormat g = new DecimalFormat("###0.000");
 
         System.out.println("\nfor " + completedJobs + " jobs the service node statistics are:\n");

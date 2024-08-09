@@ -29,11 +29,6 @@ public abstract class MsmqCenter extends Center {
         this.lastDeparture = new double[numServer];
     }
 
-    @Override
-    public Center getNextCenter() {
-        return null;
-    }
-
     public int processArrival() {
         numJobs += 1;
 
@@ -114,7 +109,7 @@ public abstract class MsmqCenter extends Center {
 
     @Override
     public void printStatistics() {
-        DecimalFormat f = new DecimalFormat("###0.00");
+        DecimalFormat f = new DecimalFormat("###0.000");
         DecimalFormat g = new DecimalFormat("###0.000");
 
         System.out.println("\nfor " + completedJobs + " jobs the service node statistics are:\n");

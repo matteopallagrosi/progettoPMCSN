@@ -7,15 +7,13 @@ import it.metro.utils.Rngs;
 import it.metro.utils.Rvgs;
 import it.metro.utils.Server;
 import it.metro.utils.Time;
-
-import java.text.DecimalFormat;
 import java.util.*;
 
 public class Simulation {
 
     private Queue<Event> events;                            //lista che tiene traccia degli eventi generati durante la simulazione
     private static double arrival = 0;
-    static double STOP    = 200000.0;                       //"close the door" --> il flusso di arrivo viene interrotto
+    static double STOP    = 2000000.0;                       //"close the door" --> il flusso di arrivo viene interrotto
     public boolean closeTheDoor = false;
     private Time t;                                         //clock di simulazione
     private Rngs r;                                         //generatore di valori randomici Uniform(0,1)
@@ -26,6 +24,10 @@ public class Simulation {
     private TicketInspectorsCenter ticketInspectorsCenter;
     private ElevatorsCenter elevatorsCenter;
     private SubwayPlatformCenter subwayPlatformCenter;
+    private Center[] centers;
+    private int arrivalsTurtsiles = 0;
+    private int arrivalsElectronic = 0;
+    private int arrivalsTicket = 0;
 
     //Run simulation
     public static void main(String[] args) {
@@ -35,12 +37,19 @@ public class Simulation {
 
     //Inizializza la configurazione dei vari centri
     private void initCenters() {
+        centers = new Center[6];
         electronicTicketCenter = new ElectronicTicketCenter(4, v);
+        centers[0] = electronicTicketCenter;
         ticketCenter = new TicketCenter(4, v);
+        centers[1] = ticketCenter;
         turnstilesCenter = new TurnstilesCenter(4, v);
+        centers[2] = turnstilesCenter;
         ticketInspectorsCenter = new TicketInspectorsCenter(2, v);
+        centers[3] = ticketInspectorsCenter;
         elevatorsCenter = new ElevatorsCenter(2, v);
+        centers[4] = elevatorsCenter;
         subwayPlatformCenter = new SubwayPlatformCenter(1, v);
+        centers[5] = subwayPlatformCenter;
     }
 
     private void initGenerators() {
@@ -64,12 +73,15 @@ public class Simulation {
         r.selectStream(2);
         double random = r.random();
         if (random <= 0.33) {
+            arrivalsTurtsiles++;
             return turnstilesCenter;                //pA --> utente abbonato che si dirige ai tornelli
         }
         else if (random > 0.33 && random <= 0.83) {
+            arrivalsElectronic++;
             return electronicTicketCenter;          //pB --> utente si dirige verso biglietteria automatica
         }
         else {
+            arrivalsTicket++;
             return ticketCenter;                    //pF --> utente si dirige verso biglietteria fisica
         }
     }
@@ -86,6 +98,7 @@ public class Simulation {
 
         //l'arrivo può essere di utente abbonato, o diretto verso casse automatiche o fisiche
         arrival.setCenter(getEventUser());
+        arrival.setExternal(true);
         return arrival;
     }
 
@@ -95,6 +108,22 @@ public class Simulation {
         departure.setCenter(center);
         departure.setServer(server);
         return departure;
+    }
+
+    private void generateArrivalNextCenter(Event currentEvent) {
+        Center currentCenter = currentEvent.getCenter();
+        int nextCenterID = currentCenter.getNextCenter();
+
+        //se nextCenterID == 0 --> non c'è un centro successivo al centro corrente (il job ha attraversato l'intero sistema)
+        //altrimenti produce un evento di arrivo al centro successivo con clock pari a quello del completamento appena avvenuto
+        //questo rappresenta il transito di un job da un centro al successivo
+        if (nextCenterID != 0) {
+            Center nextCenter = centers[nextCenterID-1];
+            Event arrivalNextCenter = new Event(EventType.ARRIVAL, currentEvent.getTime());
+            arrivalNextCenter.setCenter(nextCenter);
+            arrivalNextCenter.setExternal(false);
+            events.add(arrivalNextCenter);
+        }
     }
 
     private void run() {
@@ -107,7 +136,6 @@ public class Simulation {
 
         //produce il primo evento, che è necessariamente un arrivo
         events.add(generateArrivalEvent());
-        int i = 0;
 
         //procede a processare gli eventi, finché non si supera il "close the door" e la lista degli eventi non viene svuotata
         while (!closeTheDoor || !events.isEmpty()) {
@@ -127,14 +155,15 @@ public class Simulation {
             if (event.getType() == EventType.ARRIVAL) {
                 int serverDeparture = currentCenter.processArrival();
 
-                //produce l'arrivo successivo
-                Event newArrival = generateArrivalEvent();
-                if (newArrival.getTime() > STOP) {
-                    t.last = t.current;
-                    closeTheDoor = true;
-                }
-                else {
-                    events.add(newArrival);
+                //produce l'arrivo successivo dall'esterno solo quando viene processato un arrivo "nuovo" (ossia dall'esterno, non conseguente a un completamento)
+                if (event.isExternal()) {
+                    Event newArrival = generateArrivalEvent();
+                    if (newArrival.getTime() > STOP) {
+                        t.last = t.current;
+                        closeTheDoor = true;
+                    } else {
+                        events.add(newArrival);
+                    }
                 }
 
                 //se il job è stato mandato in servizio produce l'evento di completamento
@@ -145,17 +174,24 @@ public class Simulation {
             //processa l'evento di completamento
             else if (event.getType() == EventType.DEPARTURE) {
                 int generateDeparture = currentCenter.processDeparture();
+                //se il completamento corrente ha portato in servizio il job successivo, produce un nuovo evento di completamento
                 if (generateDeparture != -1) {
                     events.add(generateDepartureEvent(currentCenter, event.getServer()));
                 }
-            }
-            i++;
-        }
 
+                //genera l'evento di arrivo presso il centro successivo conseguente al completamento presso il centro corrente
+                generateArrivalNextCenter(event);
+            }
+        }
+        System.out.println("turstiles: " + arrivalsTurtsiles);
+        System.out.println("electronic " + arrivalsElectronic);
+        System.out.println("ticket: " + arrivalsTicket);
         //stampa le statistiche
         printCentersStatistics();
 
     }
+
+
 
     //stampa le statistiche di ogni centro
     private void printCentersStatistics() {

@@ -10,8 +10,8 @@ public class ElectronicTicketCenter extends MssqCenter {
     }
 
     @Override
-    public Center getNextCenter() {
-        return null;
+    public int getNextCenter() {
+        return 3;
     }
 
     @Override
