@@ -15,7 +15,7 @@ public class Simulation {
 
     private Queue<Event> events;                            //lista che tiene traccia degli eventi generati durante la simulazione
     private static double arrival = 0;
-    static double STOP    = 2000000.0;                       //"close the door" --> il flusso di arrivo viene interrotto
+    static double STOP    = 200000.0;                       //"close the door" --> il flusso di arrivo viene interrotto
     public boolean closeTheDoor = false;
     private Time t;                                         //clock di simulazione
     private Rngs r;                                         //generatore di valori randomici Uniform(0,1)
@@ -36,8 +36,8 @@ public class Simulation {
     //Inizializza la configurazione dei vari centri
     private void initCenters() {
         electronicTicketCenter = new ElectronicTicketCenter(4, v);
-        ticketCenter = new TicketCenter(2, v);
-        turnstilesCenter = new TurnstilesCenter(2, v);
+        ticketCenter = new TicketCenter(4, v);
+        turnstilesCenter = new TurnstilesCenter(4, v);
         ticketInspectorsCenter = new TicketInspectorsCenter(2, v);
         elevatorsCenter = new ElevatorsCenter(2, v);
         subwayPlatformCenter = new SubwayPlatformCenter(1, v);
@@ -61,7 +61,7 @@ public class Simulation {
 
     //genera il centro a cui l'utente è diretto all'arrivo (tornelli se abbonato, oppure alle casse automatiche oppure alle casse fisiche)
     private Center getEventUser() {
-        /*r.selectStream(2);
+        r.selectStream(2);
         double random = r.random();
         if (random <= 0.33) {
             return turnstilesCenter;                //pA --> utente abbonato che si dirige ai tornelli
@@ -71,14 +71,13 @@ public class Simulation {
         }
         else {
             return ticketCenter;                    //pF --> utente si dirige verso biglietteria fisica
-        }*/
-        return turnstilesCenter;
+        }
     }
 
     //genera il prossimo istante di arrivo (arrivi random = tempo di interarr. esp.)
     private double getArrival() {
         r.selectStream(0);
-        arrival += v.exponential(0.125);
+        arrival += v.exponential(0.166);
         return (arrival);
     }
 
@@ -161,11 +160,11 @@ public class Simulation {
     //stampa le statistiche di ogni centro
     private void printCentersStatistics() {
         System.out.println("Electronic Ticket Center:");
-        electronicTicketCenter.printStatistics(t);
+        electronicTicketCenter.printStatistics();
         System.out.println("Ticket Center:");
-        ticketCenter.printStatistics(t);
+        ticketCenter.printStatistics();
         System.out.println("TurnstilesCenter");
-        turnstilesCenter.printStatistics(t);
+        turnstilesCenter.printStatistics();
     }
 
 }

@@ -15,6 +15,8 @@ import java.util.List;
 public abstract class MsmqCenter extends Center {
 
     public int[] queues;            //tiene traccia della popolazione in ogni coda del centro
+    public double[] lastArrive;     //tiene traccia dell'ultimo arrivo in ogni server
+    public double[] lastDeparture;  //tiene traccia dell'ultimo completamento per ogni server
 
     public MsmqCenter(int id, int numServer, Rvgs v) {
         super(id, numServer, v);
@@ -23,6 +25,8 @@ public abstract class MsmqCenter extends Center {
         for (int i = 0; i < numServer; i++) {
             this.area[i] = new Area();
         }
+        this.lastArrive = new double[numServer];
+        this.lastDeparture = new double[numServer];
     }
 
     @Override
@@ -32,6 +36,19 @@ public abstract class MsmqCenter extends Center {
 
     public int processArrival() {
         numJobs += 1;
+
+        //caso con ripartizione uniforme del flusso tra serventi (solo per check)
+        /*v.rngs.selectStream(20);
+        int chosenServer = (int)v.equilikely(0, numServer-1);
+        if (servers[chosenServer].idle) {
+            lastService = getService();
+            servers[chosenServer].service += lastService;
+            servers[chosenServer].served++;
+            servers[chosenServer].idle = false;
+            numBusyServers++;
+            lastArrive[chosenServer] = currentEvent.getTime();
+            return chosenServer;
+        }*/
 
         //se è disponibile un server, il job viene immediatamente servito
         //ritorna l'indice del server per cui deve essere prodotto un tempo di completamento, altrimenti -1 se job va in coda
@@ -43,17 +60,20 @@ public abstract class MsmqCenter extends Center {
             selectedServer.served++;
             selectedServer.idle = false;
             numBusyServers++;
+            lastArrive[serverIndex] = currentEvent.getTime();
             //il controller produce un evento di completamento
             return serverIndex;
         }
         //altrimenti il job viene inserito in una delle code secondo la politica di accodamento creata
         int selectedQueue = selectQueue();
         queues[selectedQueue]++;
+        lastArrive[selectedQueue] = currentEvent.getTime();
         return -1;
     }
 
     @Override
     public int processDeparture() {
+        lastDeparture[currentEvent.getServer().id] = currentEvent.getTime();
         completedJobs += 1;
         numJobs -= 1;
         //aggiorna l'ultimo completamento presso il server coinvolto (necessario per selezionare il server libero da più tempo)
@@ -93,7 +113,7 @@ public abstract class MsmqCenter extends Center {
     }
 
     @Override
-    public void printStatistics(Time t) {
+    public void printStatistics() {
         DecimalFormat f = new DecimalFormat("###0.00");
         DecimalFormat g = new DecimalFormat("###0.000");
 
@@ -101,18 +121,19 @@ public abstract class MsmqCenter extends Center {
 
         for (int i = 0; i < numServer; i++) {
             System.out.println("Queue + Server " + i + ":");
-            System.out.println("  avg interarrivals .. =   " + f.format(t.last / servers[i].served));
+            System.out.println("last arrive: " + lastArrive[i]);
+            System.out.println("  avg interarrivals .. =   " + f.format(lastArrive[i] / servers[i].served));
             System.out.println("  avg wait ........... =   " + f.format(area[i].node / servers[i].served));
             System.out.println("serviti: " + servers[i].served);
-            System.out.println("  avg # in node ...... =   " + f.format(area[i].node / t.current));
+            System.out.println("  avg # in node ...... =   " + f.format(area[i].node / lastDeparture[i]));
             System.out.println("  avg delay .......... =   " + f.format(area[i].queue / servers[i].served));
-            System.out.println("  avg # in queue ..... =   " + f.format(area[i].queue / t.current));
+            System.out.println("  avg # in queue ..... =   " + f.format(area[i].queue / lastDeparture[i]));
         }
 
         System.out.println("\nthe server statistics are:\n");
         System.out.println("    server     utilization     avg service      share");
         for (int s = 0; s < numServer; s++) {
-            System.out.print("       " + s + "          " + g.format(servers[s].service / t.current) + "            ");
+            System.out.print("       " + s + "          " + g.format(servers[s].service / lastDeparture[s]) + "            ");
             System.out.println(f.format(servers[s].service / servers[s].served) + "         " + g.format(servers[s].served / (double)completedJobs));
         }
         //share = percentuale di job processati da quel server sul totale

@@ -11,6 +11,9 @@ import java.text.DecimalFormat;
 //Multi Server Single Queue Center
 public abstract class MssqCenter extends Center {
 
+    public double lastArrive;                      //ultimo arrivo presso questo centro
+    public double lastDeparture;                   //istante di completamento dell'ultimo job del centro
+
     public MssqCenter(int id, int numServer, Rvgs v) {
         super(id, numServer, v);
         this.area = new Area[1];
@@ -19,6 +22,7 @@ public abstract class MssqCenter extends Center {
 
     //processa l'arrivo di un job nel centro
     public int processArrival() {
+        lastArrive = currentEvent.getTime();
         numJobs += 1;
 
         //se è disponibile un server, il job viene immediatamente servito
@@ -40,6 +44,7 @@ public abstract class MssqCenter extends Center {
     //processa il completamento di un job nel centro
     //ritorna valore != -1 se è presente un ulteriore job in coda da processare
     public int processDeparture() {
+        lastDeparture = currentEvent.getTime();
         completedJobs += 1;
         numJobs -= 1;
         //aggiorna l'ultimo completamento presso il server coinvolto (necessario per selezionare il server libero da più tempo)
@@ -73,22 +78,23 @@ public abstract class MssqCenter extends Center {
         currentEvent = newEvent;
     }
 
-    public void printStatistics(Time t) {
+    public void printStatistics() {
         DecimalFormat f = new DecimalFormat("###0.00");
         DecimalFormat g = new DecimalFormat("###0.000");
 
         System.out.println("\nfor " + completedJobs + " jobs the service node statistics are:\n");
-        System.out.println("  avg interarrivals .. =   " + f.format(t.last / completedJobs));
+
+        System.out.println("  avg interarrivals .. =   " + f.format(lastArrive / completedJobs));
         System.out.println("  avg wait ........... =   " + f.format(area[0].node / completedJobs));
-        System.out.println("  avg # in node ...... =   " + f.format(area[0].node / t.current));
+        System.out.println("  avg # in node ...... =   " + f.format(area[0].node / lastDeparture));
         System.out.println("  avg delay .......... =   " + f.format(area[0].queue / completedJobs));
-        System.out.println("  avg # in queue ..... =   " + f.format(area[0].queue / t.current));
+        System.out.println("  avg # in queue ..... =   " + f.format(area[0].queue / lastDeparture));
 
 
         System.out.println("\nthe server statistics are:\n");
         System.out.println("    server     utilization     avg service      share");
         for (int s = 0; s < numServer; s++) {
-            System.out.print("       " + s + "          " + g.format(servers[s].service / t.current) + "            ");
+            System.out.print("       " + s + "          " + g.format(servers[s].service / lastDeparture) + "            ");
             System.out.println(f.format(servers[s].service / servers[s].served) + "         " + g.format(servers[s].served / (double)completedJobs));
         }
         //share = percentuale di job processati da quel server sul totale

@@ -17,6 +17,7 @@ public class TicketCenter extends MssqCenter {
     @Override
     public double getService() {
         v.rngs.selectStream(3);
-        return (v.uniform(2.0, 10.0));
+        //return (v.uniform(2.0, 10.0));
+        return v.exponential(5);
     }
 }

@@ -14,7 +14,6 @@ public abstract class Center {
     public int completedJobs = 0;       //numero di jobs processati dal server
     public Event currentEvent;          //l'evento correntemente processato dal centro
     public Area[] area;
-    public Event lastArrival;
     public double lastService;          //ultimo tempo di servizio generato
     public Rvgs v;
     public Server[] servers;            //lista di server del centro
@@ -46,7 +45,7 @@ public abstract class Center {
     //aggiorna le statistiche per il centro
     public abstract void updateStatistics(Event newEvent);
 
-    public abstract void printStatistics(Time t);
+    public abstract void printStatistics();
 
     //quando questa funzione viene invocata, è già stata controllata la presenza di almeno un server libero
     //seleziona tra i server liberi, quello libero da più tempo

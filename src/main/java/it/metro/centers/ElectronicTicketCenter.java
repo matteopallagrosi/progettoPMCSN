@@ -17,6 +17,7 @@ public class ElectronicTicketCenter extends MssqCenter {
     @Override
     public double getService() {
         v.rngs.selectStream(1);
-        return (v.uniform(2.0, 10.0));
+        //return (v.uniform(2.0, 10.0));
+        return v.exponential(0.5);
     }
 }

@@ -37,7 +37,7 @@ public class MslsCenter extends Center {
     }
 
     @Override
-    public void printStatistics(Time t) {
+    public void printStatistics() {
 
     }
 }
