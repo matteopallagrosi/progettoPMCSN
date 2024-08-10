@@ -16,6 +16,7 @@ public class ElevatorsCenter extends MssqCenter {
 
     @Override
     public double getService() {
-        return 1.0;
+        v.rngs.selectStream(70);
+        return v.exponential(2);
     }
 }

@@ -71,7 +71,6 @@ public abstract class MssqCenter extends Center {
             double delta = (newEvent.getTime() - currentEvent.getTime());
             area[0].node    += delta * numJobs;
             area[0].queue   += delta * (numJobs - numBusyServers);
-            area[0].service += delta;
         }
 
         //aggiorna l'evento corrente per il centro

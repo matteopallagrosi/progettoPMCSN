@@ -44,9 +44,9 @@ public class Simulation {
         centers[1] = ticketCenter;
         turnstilesCenter = new TurnstilesCenter(4, v);
         centers[2] = turnstilesCenter;
-        ticketInspectorsCenter = new TicketInspectorsCenter(2, v);
+        ticketInspectorsCenter = new TicketInspectorsCenter(4, v);
         centers[3] = ticketInspectorsCenter;
-        elevatorsCenter = new ElevatorsCenter(2, v);
+        elevatorsCenter = new ElevatorsCenter(4, v);
         centers[4] = elevatorsCenter;
         subwayPlatformCenter = new SubwayPlatformCenter(1, v);
         centers[5] = subwayPlatformCenter;
@@ -170,6 +170,10 @@ public class Simulation {
                 if (serverDeparture != -1) {
                     events.add(generateDepartureEvent(currentCenter, currentCenter.servers[serverDeparture]));
                 }
+                //se il job non è stato mandato in servizio, e il centro corrente è quello dei controllori, il job deve raggiungere direttamente il centro successivo
+                else if (currentCenter == ticketInspectorsCenter) {
+                    generateArrivalNextCenter(event);
+                }
             }
             //processa l'evento di completamento
             else if (event.getType() == EventType.DEPARTURE) {
@@ -201,6 +205,10 @@ public class Simulation {
         ticketCenter.printStatistics();
         System.out.println("TurnstilesCenter");
         turnstilesCenter.printStatistics();
+        System.out.println("TicketInspectorsCenter");
+        ticketInspectorsCenter.printStatistics();
+        System.out.println("ElevatorsCenter");
+        elevatorsCenter.printStatistics();
     }
 
 }

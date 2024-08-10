@@ -10,7 +10,7 @@ public class TurnstilesCenter extends MsmqCenter {
     }
 
     public int getNextCenter() {
-        return 0;
+        return 4;
     }
 
     @Override

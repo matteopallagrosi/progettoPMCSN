@@ -4,20 +4,15 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Fixed statistics and TurstilesCenter completed">
+    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Generation arrivals next centers">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/Center.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/Center.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElectronicTicketCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElectronicTicketCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElevatorsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElevatorsCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MslsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MslsCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MssqCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MssqCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketInspectorsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketInspectorsCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TurnstilesCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TurnstilesCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/events/Event.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/events/Event.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -129,7 +124,8 @@
       <workItem from="1723107151025" duration="7890000" />
       <workItem from="1723122876942" duration="1771000" />
       <workItem from="1723130404943" duration="9937000" />
-      <workItem from="1723192912182" duration="16366000" />
+      <workItem from="1723192912182" duration="17676000" />
+      <workItem from="1723281540240" duration="15369000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -187,7 +183,15 @@
       <option name="project" value="LOCAL" />
       <updated>1723200363886</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="Generation arrivals next centers">
+      <option name="closed" value="true" />
+      <created>1723217766083</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1723217766083</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -213,6 +217,7 @@
     <MESSAGE value="Refactoring entities and working on TurstilesCenter" />
     <MESSAGE value="Working on turstileCenter" />
     <MESSAGE value="Fixed statistics and TurstilesCenter completed" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed statistics and TurstilesCenter completed" />
+    <MESSAGE value="Generation arrivals next centers" />
+    <option name="LAST_COMMIT_MESSAGE" value="Generation arrivals next centers" />
   </component>
 </project>

@@ -33,6 +33,7 @@ public abstract class MsmqCenter extends Center {
         numJobs += 1;
 
         //caso con ripartizione uniforme del flusso tra serventi (solo per check)
+        //modifico il centro in modo da verificare se avendo Poisson in ingresso ho Poisson anche in uscita
         /*v.rngs.selectStream(20);
         int chosenServer = (int)v.equilikely(0, numServer-1);
         if (servers[chosenServer].idle) {

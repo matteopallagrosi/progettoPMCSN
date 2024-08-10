@@ -11,11 +11,20 @@ public class TicketInspectorsCenter extends MslsCenter {
 
     @Override
     public int getNextCenter() {
-        return 0;
+        //probabilità con cui nextCenter è Elevator oppure Platform
+        v.rngs.selectStream(60);
+        double random = v.rngs.random();
+        if (random <= 0.1) {
+            return 5;                        //pE --> utente che si dirige verso gli ascensori
+        }
+        else {
+            return 6;                        //1-pE --> utente che si dirige verso la banchina del treno
+        }
     }
 
     @Override
     public double getService() {
-        return 1.0;
+        v.rngs.selectStream(50);
+        return v.exponential(0.5);
     }
 }
