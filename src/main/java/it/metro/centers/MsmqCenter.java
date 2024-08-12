@@ -34,7 +34,7 @@ public abstract class MsmqCenter extends Center {
 
         //caso con ripartizione uniforme del flusso tra serventi (solo per check)
         //modifico il centro in modo da verificare se avendo Poisson in ingresso ho Poisson anche in uscita
-        /*v.rngs.selectStream(20);
+        v.rngs.selectStream(20);
         int chosenServer = (int)v.equilikely(0, numServer-1);
         if (servers[chosenServer].idle) {
             lastService = getService();
@@ -44,11 +44,11 @@ public abstract class MsmqCenter extends Center {
             numBusyServers++;
             lastArrive[chosenServer] = currentEvent.getTime();
             return chosenServer;
-        }*/
+        }
 
         //se è disponibile un server, il job viene immediatamente servito
         //ritorna l'indice del server per cui deve essere prodotto un tempo di completamento, altrimenti -1 se job va in coda
-        if (isSomeServerIdle()) {
+        /*if (isSomeServerIdle()) {
             int serverIndex = findIdleServer();
             Server selectedServer = servers[serverIndex];
             lastService = generateService(serverIndex);
@@ -59,11 +59,11 @@ public abstract class MsmqCenter extends Center {
             lastArrive[serverIndex] = currentEvent.getTime();
             //il controller produce un evento di completamento
             return serverIndex;
-        }
+        }*/
         //altrimenti il job viene inserito in una delle code secondo la politica di accodamento creata
         int selectedQueue = selectQueue();
-        queues[selectedQueue]++;
-        lastArrive[selectedQueue] = currentEvent.getTime();
+        queues[chosenServer]++;
+        lastArrive[chosenServer] = currentEvent.getTime();
         return -1;
     }
 

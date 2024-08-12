@@ -28,6 +28,7 @@ public class Simulation {
     private int arrivalsTurtsiles = 0;
     private int arrivalsElectronic = 0;
     private int arrivalsTicket = 0;
+    private static double trainArrival = 0;
 
     //Run simulation
     public static void main(String[] args) {
@@ -126,6 +127,20 @@ public class Simulation {
         }
     }
 
+    private void generateTrainArrivalEvent() {
+        r.selectStream(80);
+        trainArrival += v.exponential(10);
+        Event tArrival = new Event(EventType.TRAINARRIVAL, trainArrival);
+        tArrival.setCenter(subwayPlatformCenter);
+        //se il flusso di arrivi è bloccato e non ci sono più passeggeri nella banchina, si interrompe il passaggio dei treni
+        if (closeTheDoor && subwayPlatformCenter.numJobs == 0) {
+            return;
+        }
+        else {
+        events.add(tArrival);
+        }
+    }
+
     private void run() {
         this.initGenerators();
         this.initCenters();
@@ -136,6 +151,9 @@ public class Simulation {
 
         //produce il primo evento, che è necessariamente un arrivo
         events.add(generateArrivalEvent());
+
+        //produce il primo arrivo del treno
+        generateTrainArrivalEvent();
 
         //procede a processare gli eventi, finché non si supera il "close the door" e la lista degli eventi non viene svuotata
         while (!closeTheDoor || !events.isEmpty()) {
@@ -186,6 +204,14 @@ public class Simulation {
                 //genera l'evento di arrivo presso il centro successivo conseguente al completamento presso il centro corrente
                 generateArrivalNextCenter(event);
             }
+            //processa l'arrivo di un treno
+            else if (event.getType() == EventType.TRAINARRIVAL) {
+                //All'arrivo di un treno si verifica la partenza dei passeggeri dalla banchina del treno, i quali lasciano quindi il sistema
+                subwayPlatformCenter.processDeparture();
+
+                //genero il prossimo evento di arrivo del treno
+                generateTrainArrivalEvent();
+            }
         }
         System.out.println("turstiles: " + arrivalsTurtsiles);
         System.out.println("electronic " + arrivalsElectronic);
@@ -209,6 +235,8 @@ public class Simulation {
         ticketInspectorsCenter.printStatistics();
         System.out.println("ElevatorsCenter");
         elevatorsCenter.printStatistics();
+        System.out.println("SubwayPlatformCenter");
+        subwayPlatformCenter.printStatistics();
     }
 
 }

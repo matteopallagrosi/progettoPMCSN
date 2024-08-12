@@ -11,7 +11,7 @@ public class ElevatorsCenter extends MssqCenter {
 
     @Override
     public int getNextCenter() {
-        return 0;
+        return 6;
     }
 
     @Override
