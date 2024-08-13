@@ -7,6 +7,8 @@ import it.metro.utils.Rngs;
 import it.metro.utils.Rvgs;
 import it.metro.utils.Server;
 import it.metro.utils.Time;
+
+import java.text.DecimalFormat;
 import java.util.*;
 
 public class Simulation {
@@ -216,8 +218,11 @@ public class Simulation {
         System.out.println("turstiles: " + arrivalsTurtsiles);
         System.out.println("electronic " + arrivalsElectronic);
         System.out.println("ticket: " + arrivalsTicket);
-        //stampa le statistiche
+        //stampa le statistiche di ogni centro
         printCentersStatistics();
+
+        //stampa le statistiche dell'intero sistema
+        printSystemStatistics();
 
     }
 
@@ -237,6 +242,33 @@ public class Simulation {
         elevatorsCenter.printStatistics();
         System.out.println("SubwayPlatformCenter");
         subwayPlatformCenter.printStatistics();
+    }
+
+    //calcola il tempo medio di risposta per un job che attraversa l'intero sistema e raggiunge la banchina
+    //viene però escluso il tempo di attesa sulla banchina (che non è un vero centro, ma serve per limitare la popolazione sulla banchina rendendo il sistema il più verosimile possibile)
+    private void printSystemStatistics() {
+        double areaSystem = 0;              //tiene traccia dell'area sottesa al gradico di l(t) per l'intero sistema (somma di quella dei singoli centri)
+        for (Center center : centers) {
+            if ((center instanceof MssqCenter) || (center instanceof MslsCenter)) {
+                areaSystem += center.area[0].node;
+            }
+            else if (center instanceof MsmqCenter) {
+                for (int i= 0; i < center.numServer; i++) {
+                    areaSystem += center.area[i].node;
+                }
+            }
+            //in questo caso ricade solo SubwayPlatformCenter
+            else {
+                areaSystem += 0;
+            }
+        }
+
+        DecimalFormat f = new DecimalFormat("###0.000");
+        System.out.println("\nfor " + subwayPlatformCenter.completedJobs + " jobs the service node statistics are:\n");
+        //il tempo di risposta è il tempo per raggiungere la banchina (non viene quindi considerato il tempo di attesa dell'arrivo del treno)
+        System.out.println("  avg wait ........... =   " + f.format(areaSystem / subwayPlatformCenter.completedJobs));
+        //popolazione media nell'intero sistema
+        System.out.println("  avg # in node ...... =   " + f.format(areaSystem / elevatorsCenter.lastDeparture));
     }
 
 }

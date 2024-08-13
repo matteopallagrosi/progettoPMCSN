@@ -4,13 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="TicketInspectorsCenter and ElevatorsCenter completed">
+    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Completato SubwayPlatformCenter e controller simulazione">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElevatorsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElevatorsCenter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MslsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MslsCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/events/EventType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/events/EventType.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -125,7 +123,9 @@
       <workItem from="1723192912182" duration="17676000" />
       <workItem from="1723281540240" duration="15635000" />
       <workItem from="1723382412078" duration="8490000" />
-      <workItem from="1723455828401" duration="3615000" />
+      <workItem from="1723455828401" duration="3958000" />
+      <workItem from="1723542244544" duration="2026000" />
+      <workItem from="1723553103811" duration="7288000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -199,7 +199,15 @@
       <option name="project" value="LOCAL" />
       <updated>1723304731948</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Completato SubwayPlatformCenter e controller simulazione">
+      <option name="closed" value="true" />
+      <created>1723459546248</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1723459546248</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -227,6 +235,7 @@
     <MESSAGE value="Fixed statistics and TurstilesCenter completed" />
     <MESSAGE value="Generation arrivals next centers" />
     <MESSAGE value="TicketInspectorsCenter and ElevatorsCenter completed" />
-    <option name="LAST_COMMIT_MESSAGE" value="TicketInspectorsCenter and ElevatorsCenter completed" />
+    <MESSAGE value="Completato SubwayPlatformCenter e controller simulazione" />
+    <option name="LAST_COMMIT_MESSAGE" value="Completato SubwayPlatformCenter e controller simulazione" />
   </component>
 </project>

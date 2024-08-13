@@ -82,7 +82,8 @@ public abstract class MslsCenter extends Center {
         System.out.println("arrival jobs: " + arrivalJobs);
         System.out.println("rejected jobs: " + rejectedJob);
         System.out.println("loss probability (a job finds all servers busy): " + f.format(rejectedJob/arrivalJobs));
-        System.out.println("  avg interarrivals .. =   " + f.format(lastArrive / arrivalJobs));
+        System.out.println("  avg interarrivals (all jobs).. =   " + f.format(lastArrive / arrivalJobs));
+        System.out.println("  avg interarrivals (accepted jobs) .. =   " + f.format(lastArrive / completedJobs));
         System.out.println("  avg wait ........... =   " + f.format(area[0].node / completedJobs));
         System.out.println("  avg # in node ...... =   " + f.format(area[0].node / lastDeparture));
         System.out.println("  avg delay .......... =   " + f.format(0));
