@@ -171,4 +171,30 @@ public abstract class MsmqCenter extends Center {
         int selectedServerIndex = (int)v.equilikely(0, serversIdle.size()-1);
         return serversIdle.get(selectedServerIndex).id;
     }
+
+    //i metodi sottostanti ritornano le statistiche dell'i-esimo centro (coppia server-coda)
+    public double getAvgInterarrival(int i) {
+        return lastArrive[i] / servers[i].served;
+    }
+
+    public double getAvgWait(int i) {
+        return area[i].node / servers[i].served;
+    }
+
+    public double getAvgDelay(int i) {
+        return area[i].queue / servers[i].served;
+    }
+
+    public double getAvgNode(int i) {
+        return area[i].node / lastDeparture[i];
+    }
+
+    public double getAvgQueue(int i) {
+        return area[i].queue / lastDeparture[i];
+    }
+
+
+    public double getUtilization(int i) {
+        return servers[i].service / lastDeparture[i];
+    }
 }

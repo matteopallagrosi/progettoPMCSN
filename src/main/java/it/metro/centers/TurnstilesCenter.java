@@ -2,7 +2,7 @@ package it.metro.centers;
 
 import it.metro.utils.Rvgs;
 
-//rappresenta il centro dei tornelli
+//rappresenta il centro dei tornelli (in realtà è un sottosistema costituito da numServer centri, con probabilità di routing che variano a runtime)
 public class TurnstilesCenter extends MsmqCenter {
 
     public TurnstilesCenter(int numServer, Rvgs v) {

@@ -100,4 +100,30 @@ public abstract class MssqCenter extends Center {
 
         System.out.println("");
     }
+
+    public double getAvgInterarrival(int i) {
+        return lastArrive / completedJobs;
+    }
+
+    public double getAvgWait(int i) {
+        return area[0].node / completedJobs;
+    }
+
+    public double getAvgDelay(int i) {
+        return area[0].queue / completedJobs;
+    }
+
+    public double getAvgNode(int i) {
+        return area[0].node / lastDeparture;
+    }
+
+    public double getAvgQueue(int i) {
+        return area[0].queue / lastDeparture;
+    }
+
+
+    //ritorna l'utilizzazione dell'i-esimo server del centro
+    public double getUtilization(int i) {
+        return servers[i].service / lastDeparture;
+    }
 }

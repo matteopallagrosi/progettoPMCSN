@@ -3,10 +3,7 @@ package it.metro.controller;
 import it.metro.centers.*;
 import it.metro.events.Event;
 import it.metro.events.EventType;
-import it.metro.utils.Rngs;
-import it.metro.utils.Rvgs;
-import it.metro.utils.Server;
-import it.metro.utils.Time;
+import it.metro.utils.*;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -143,6 +140,7 @@ public class Simulation {
         }
     }
 
+    //Esegue una singola replica della simulazione (usata per fare la verifica del modello)
     private void run() {
         this.initGenerators();
         this.initCenters();
@@ -223,9 +221,174 @@ public class Simulation {
 
         //stampa le statistiche dell'intero sistema
         printSystemStatistics();
-
     }
 
+    //Esegue la simulazione a orizzonte infinito del sistema (con il metodo dei batch means)
+    public void runInfiniteHorizonSimulation(int numBatches, int batchSize) {
+        int jobsProcessed = 0;      //jobs processati nel batch corrente
+        int batchIndex = 0;                                                                      //tiene traccia del batch correntemente simulato
+        Statistics[][] matrix = new Statistics[5 + turnstilesCenter.numServer][numBatches];      //matrice che tiene traccia delle statistiche medie per ogni centro e per ogni batch
+        this.initGenerators();
+        this.initCenters();
+        this.initEvents();
+
+        //inizializza il clock di simulazione
+        t = new Time(0, 0);
+
+        //produce il primo evento, che è necessariamente un arrivo
+        events.add(generateArrivalEvent());
+
+        //produce il primo arrivo del treno
+        generateTrainArrivalEvent();
+
+        //procede a processare gli eventi, finché non si supera il "close the door" e la lista degli eventi non viene svuotata
+        while (!closeTheDoor || !events.isEmpty()) {
+            //estraggo il prossimo evento (in ordine di clock di simulazione)
+            Event event = events.poll();
+
+            //recupera il centro a cui è diretto l'evento
+            Center currentCenter = event.getCenter();
+
+            //aggiorna le statistiche del centro interessato dall'evento (e aggiorna l'evento corrente)
+            currentCenter.updateStatistics(event);
+
+            //aggiorna il clock di simulazione
+            t.current = event.getTime();
+
+            //processa l'evento di arrivo
+            if (event.getType() == EventType.ARRIVAL) {
+                //tiene traccia del numero di arrivi totale presso la banchina
+                //questo è necessario per sapere quando completa un batch, in modo da passare al batch successivo
+                //al completamento di un batch questa variabile viene azzerata
+                if (currentCenter == subwayPlatformCenter) {
+                    jobsProcessed++;
+                }
+                int serverDeparture = currentCenter.processArrival();
+
+                //produce l'arrivo successivo dall'esterno solo quando viene processato un arrivo "nuovo" (ossia dall'esterno, non conseguente a un completamento)
+                if (event.isExternal()) {
+                    Event newArrival = generateArrivalEvent();
+                    if (newArrival.getTime() > STOP) {
+                        t.last = t.current;
+                        closeTheDoor = true;
+                    } else {
+                        events.add(newArrival);
+                    }
+                }
+
+                //se il job è stato mandato in servizio produce l'evento di completamento
+                if (serverDeparture != -1) {
+                    events.add(generateDepartureEvent(currentCenter, currentCenter.servers[serverDeparture]));
+                }
+                //se il job non è stato mandato in servizio, e il centro corrente è quello dei controllori, il job deve raggiungere direttamente il centro successivo
+                else if (currentCenter == ticketInspectorsCenter) {
+                    generateArrivalNextCenter(event);
+                }
+            }
+            //processa l'evento di completamento
+            else if (event.getType() == EventType.DEPARTURE) {
+                int generateDeparture = currentCenter.processDeparture();
+                //se il completamento corrente ha portato in servizio il job successivo, produce un nuovo evento di completamento
+                if (generateDeparture != -1) {
+                    events.add(generateDepartureEvent(currentCenter, event.getServer()));
+                }
+
+                //genera l'evento di arrivo presso il centro successivo conseguente al completamento presso il centro corrente
+                generateArrivalNextCenter(event);
+            }
+            //processa l'arrivo di un treno
+            else if (event.getType() == EventType.TRAINARRIVAL) {
+                //All'arrivo di un treno si verifica la partenza dei passeggeri dalla banchina del treno, i quali lasciano quindi il sistema
+                subwayPlatformCenter.processDeparture();
+
+                //genero il prossimo evento di arrivo del treno
+                generateTrainArrivalEvent();
+            }
+
+            //Se ho processato un numero di job pari alla batchSize devo calcolare le statistiche medie per quel batch
+            if (jobsProcessed == batchSize) {
+                //calcole le statistiche medie per ogni centro per quel batch
+                generateStatistics(matrix, batchIndex);
+                //azzera le statistiche di ogni centro
+                resetStatistics();
+                //passa al batch successivo
+                batchIndex++;
+                jobsProcessed = 0;
+            }
+        }
+        System.out.println("turstiles: " + arrivalsTurtsiles);
+        System.out.println("electronic " + arrivalsElectronic);
+        System.out.println("ticket: " + arrivalsTicket);
+        //stampa le statistiche di ogni centro
+        printCentersStatistics();
+
+        //stampa le statistiche dell'intero sistema
+        printSystemStatistics();
+    }
+
+    private void generateStatistics(Statistics[][] matrix, int batchIndex) {
+        for (Center center : centers) {
+            Statistics centerStat = new Statistics(center.numServer);
+            //le statistiche sono settate in modo diverso a seconda del tipo di centro
+            //MssqCenter utilizza solo lo slot 0 per le statistiche
+            if ((center instanceof MssqCenter) || (center instanceof MslsCenter)) {
+                centerStat.avgInterarrivals[0] = center.getAvgInterarrival(0);
+                centerStat.avgWait[0] = center.getAvgWait(0);
+                centerStat.avgDelay[0] = center.getAvgDelay(0);
+                centerStat.avgNode[0] = center.getAvgNode(0);
+                centerStat.avgQueue[0] = center.getAvgQueue(0);
+                for (int i = 0; i < center.numServer; i++) {
+                    centerStat.utilization[i] = center.getUtilization(i);
+                }
+            }
+            //MsmqCenter ha uno slot per ogni coppia server-coda
+            else if (center instanceof MsmqCenter) {
+                for (int i = 0; i < center.numServer; i++) {
+                    centerStat.avgInterarrivals[i] = center.getAvgInterarrival(i);
+                    centerStat.avgWait[i] = center.getAvgWait(i);
+                    centerStat.avgDelay[i] = center.getAvgDelay(i);
+                    centerStat.avgNode[i] = center.getAvgNode(i);
+                    centerStat.avgQueue[i] = center.getAvgQueue(i);
+                    centerStat.utilization[i] = center.getUtilization(i);
+                }
+            }
+            matrix[center.ID-1][batchIndex] = centerStat;
+        }
+    }
+
+    //azzera le statistiche di ogni centro
+    private void resetStatistics() {
+        for (Center center : centers) {
+            if (center instanceof MssqCenter) {
+                center.completedJobs = 0;
+                center.area[0].node = 0;
+                center.area[0].queue = 0;
+                for (int i = 0; i < center.numServer; i++) {
+                    center.servers[i].service = 0;
+                    center.servers[i].served = 0;
+                }
+            }
+            else if (center instanceof MsmqCenter) {
+                for (int i = 0; i < center.numServer; i++) {
+                    center.completedJobs = 0;
+                    center.servers[i].service = 0;
+                    center.servers[i].served = 0;
+                    center.area[i].node = 0;
+                    center.area[i].queue = 0;
+                }
+            }
+            else if (center instanceof MslsCenter) {
+                center.completedJobs = 0;
+                ((MslsCenter) center).arrivalJobs = 0;
+                ((MslsCenter) center).rejectedJob = 0;
+                center.area[0].node = 0;
+                for (int i = 0; i < center.numServer; i++) {
+                    center.servers[i].service = 0;
+                    center.servers[i].served = 0;
+                }
+            }
+        }
+    }
 
 
     //stampa le statistiche di ogni centro
@@ -270,5 +433,4 @@ public class Simulation {
         //popolazione media nell'intero sistema
         System.out.println("  avg # in node ...... =   " + f.format(areaSystem / elevatorsCenter.lastDeparture));
     }
-
 }

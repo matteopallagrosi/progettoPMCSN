@@ -8,7 +8,7 @@ import it.metro.utils.Time;
 
 public abstract class Center {
 
-    final int ID;                       //identificativo univoco del centro
+    public final int ID;                       //identificativo univoco del centro
     public int numServer;               //numero di servers nel centro
     public int numJobs = 0;             //numero di jobs attualmente nel centro (servers + coda)
     public int completedJobs = 0;       //numero di jobs processati dal server
@@ -65,4 +65,17 @@ public abstract class Center {
         }
         return s;
     }
+
+    public abstract double getAvgInterarrival(int i);
+
+    public abstract double getAvgWait(int i);
+
+    public abstract double getAvgDelay(int i);
+
+    public abstract double getAvgNode(int i);
+
+    public abstract double getAvgQueue(int i);
+
+    //ritorna l'utilizzazione dell'i-esimo server del centro
+    public abstract double getUtilization(int i);
 }
