@@ -132,7 +132,7 @@ public class Simulation {
         Event tArrival = new Event(EventType.TRAINARRIVAL, trainArrival);
         tArrival.setCenter(subwayPlatformCenter);
         //se il flusso di arrivi è bloccato e non ci sono più passeggeri nella banchina, si interrompe il passaggio dei treni
-        if (closeTheDoor && subwayPlatformCenter.numJobs == 0) {
+        if (closeTheDoor && subwayPlatformCenter.numJobs == 0 && events.isEmpty()) {
             return;
         }
         else {
@@ -227,10 +227,12 @@ public class Simulation {
     public void runInfiniteHorizonSimulation(int numBatches, int batchSize) {
         int jobsProcessed = 0;      //jobs processati nel batch corrente
         int batchIndex = 0;                                                                      //tiene traccia del batch correntemente simulato
-        Statistics[][] matrix = new Statistics[5 + turnstilesCenter.numServer][numBatches];      //matrice che tiene traccia delle statistiche medie per ogni centro e per ogni batch
+        Statistics[][] matrix = new Statistics[6][numBatches];      //matrice che tiene traccia delle statistiche medie per ogni centro (e anche overall del sistema) e per ogni batch
         this.initGenerators();
         this.initCenters();
         this.initEvents();
+        double firstArriveSystem = 0;
+        double lastDepartureSystem = 0;
 
         //inizializza il clock di simulazione
         t = new Time(0, 0);
@@ -257,11 +259,17 @@ public class Simulation {
 
             //processa l'evento di arrivo
             if (event.getType() == EventType.ARRIVAL) {
+                //setta il primo arrivo all'intero sistema (nel batch corrente)
+                if (firstArriveSystem == 0) {
+                    firstArriveSystem = event.getTime();
+                }
+
                 //tiene traccia del numero di arrivi totale presso la banchina
                 //questo è necessario per sapere quando completa un batch, in modo da passare al batch successivo
                 //al completamento di un batch questa variabile viene azzerata
                 if (currentCenter == subwayPlatformCenter) {
                     jobsProcessed++;
+                    lastDepartureSystem = event.getTime();
                 }
                 int serverDeparture = currentCenter.processArrival();
 
@@ -308,25 +316,28 @@ public class Simulation {
             //Se ho processato un numero di job pari alla batchSize devo calcolare le statistiche medie per quel batch
             if (jobsProcessed == batchSize) {
                 //calcole le statistiche medie per ogni centro per quel batch
-                generateStatistics(matrix, batchIndex);
+                generateStatistics(matrix, batchIndex, jobsProcessed, firstArriveSystem, lastDepartureSystem);
                 //azzera le statistiche di ogni centro
                 resetStatistics();
+                firstArriveSystem = 0;
                 //passa al batch successivo
                 batchIndex++;
                 jobsProcessed = 0;
+
+                //La simulazione termina dopo numBatches
+                if (batchIndex == numBatches) {
+                    break;
+                }
             }
         }
-        System.out.println("turstiles: " + arrivalsTurtsiles);
-        System.out.println("electronic " + arrivalsElectronic);
-        System.out.println("ticket: " + arrivalsTicket);
-        //stampa le statistiche di ogni centro
-        printCentersStatistics();
+        System.out.println("Controllo le statistiche");
 
-        //stampa le statistiche dell'intero sistema
-        printSystemStatistics();
+        //Calcolare gli intervalli di confidenza per le diverse statistiche dei vari centri
+        //TODO
+
     }
 
-    private void generateStatistics(Statistics[][] matrix, int batchIndex) {
+    private void generateStatistics(Statistics[][] matrix, int batchIndex, int processedJobs, double firstArriveSystem, double lastDepartureSystem) {
         for (Center center : centers) {
             Statistics centerStat = new Statistics(center.numServer);
             //le statistiche sono settate in modo diverso a seconda del tipo di centro
@@ -352,8 +363,16 @@ public class Simulation {
                     centerStat.utilization[i] = center.getUtilization(i);
                 }
             }
-            matrix[center.ID-1][batchIndex] = centerStat;
+            if (center != subwayPlatformCenter) {
+                matrix[center.ID - 1][batchIndex] = centerStat;
+            }
         }
+        //l'ultima riga della matrice tiene traccia del tempo di risposta media e popolazione media dell'intero sistema in quel batch
+        Statistics overallStatistics = new Statistics(1);
+        double areaSystem = getAreaSystem();
+        overallStatistics.avgWait[0] = areaSystem / processedJobs;
+        overallStatistics.avgNode[0] = areaSystem / (lastDepartureSystem - firstArriveSystem);
+        matrix[5][batchIndex] = overallStatistics;
     }
 
     //azzera le statistiche di ogni centro
@@ -363,6 +382,7 @@ public class Simulation {
                 center.completedJobs = 0;
                 center.area[0].node = 0;
                 center.area[0].queue = 0;
+                ((MssqCenter)center).firstArrive = 0;
                 for (int i = 0; i < center.numServer; i++) {
                     center.servers[i].service = 0;
                     center.servers[i].served = 0;
@@ -375,6 +395,7 @@ public class Simulation {
                     center.servers[i].served = 0;
                     center.area[i].node = 0;
                     center.area[i].queue = 0;
+                    ((MsmqCenter)center).firstArrive[i] = 0;
                 }
             }
             else if (center instanceof MslsCenter) {
@@ -382,6 +403,7 @@ public class Simulation {
                 ((MslsCenter) center).arrivalJobs = 0;
                 ((MslsCenter) center).rejectedJob = 0;
                 center.area[0].node = 0;
+                ((MslsCenter)center).firstArrive = 0;
                 for (int i = 0; i < center.numServer; i++) {
                     center.servers[i].service = 0;
                     center.servers[i].served = 0;
@@ -407,10 +429,21 @@ public class Simulation {
         subwayPlatformCenter.printStatistics();
     }
 
+    private void printSystemStatistics() {
+        double areaSystem = getAreaSystem();
+
+        DecimalFormat f = new DecimalFormat("###0.000");
+        System.out.println("\nfor " + subwayPlatformCenter.completedJobs + " jobs the system statistics are:\n");
+        //il tempo di risposta è il tempo per raggiungere la banchina (non viene quindi considerato il tempo di attesa dell'arrivo del treno)
+        System.out.println("  avg wait ........... =   " + f.format(areaSystem / subwayPlatformCenter.completedJobs));
+        //popolazione media nell'intero sistema
+        System.out.println("  avg # in node ...... =   " + f.format(areaSystem / elevatorsCenter.lastDeparture));
+    }
+
     //calcola il tempo medio di risposta per un job che attraversa l'intero sistema e raggiunge la banchina
     //viene però escluso il tempo di attesa sulla banchina (che non è un vero centro, ma serve per limitare la popolazione sulla banchina rendendo il sistema il più verosimile possibile)
-    private void printSystemStatistics() {
-        double areaSystem = 0;              //tiene traccia dell'area sottesa al gradico di l(t) per l'intero sistema (somma di quella dei singoli centri)
+    private double getAreaSystem() {
+        double areaSystem = 0;              //tiene traccia dell'area sottesa al grafico di l(t) per l'intero sistema (somma di quella dei singoli centri)
         for (Center center : centers) {
             if ((center instanceof MssqCenter) || (center instanceof MslsCenter)) {
                 areaSystem += center.area[0].node;
@@ -425,12 +458,6 @@ public class Simulation {
                 areaSystem += 0;
             }
         }
-
-        DecimalFormat f = new DecimalFormat("###0.000");
-        System.out.println("\nfor " + subwayPlatformCenter.completedJobs + " jobs the service node statistics are:\n");
-        //il tempo di risposta è il tempo per raggiungere la banchina (non viene quindi considerato il tempo di attesa dell'arrivo del treno)
-        System.out.println("  avg wait ........... =   " + f.format(areaSystem / subwayPlatformCenter.completedJobs));
-        //popolazione media nell'intero sistema
-        System.out.println("  avg # in node ...... =   " + f.format(areaSystem / elevatorsCenter.lastDeparture));
+        return areaSystem;
     }
 }

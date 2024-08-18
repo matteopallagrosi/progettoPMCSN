@@ -11,6 +11,7 @@ import java.text.DecimalFormat;
 //Multi Server Single Queue Center
 public abstract class MssqCenter extends Center {
 
+    public double firstArrive;                     //primo arrivo presso questo centro (nel batch corrente in caso di simulazione batch means)
     public double lastArrive;                      //ultimo arrivo presso questo centro
     public double lastDeparture;                   //istante di completamento dell'ultimo job del centro
 
@@ -24,6 +25,12 @@ public abstract class MssqCenter extends Center {
     public int processArrival() {
         lastArrive = currentEvent.getTime();
         numJobs += 1;
+
+        //setta il primo arrivo presso il centro corrente
+        //necessario per calcolare il corrente tau di simulazione del batch corrente per il calcolo delle statistiche
+        if (firstArrive == 0) {
+            firstArrive = currentEvent.getTime();
+        }
 
         //se è disponibile un server, il job viene immediatamente servito
         //ritorna l'indice del server per cui deve essere prodotto un tempo di completamento, altrimenti -1 se job va in coda
@@ -102,7 +109,7 @@ public abstract class MssqCenter extends Center {
     }
 
     public double getAvgInterarrival(int i) {
-        return lastArrive / completedJobs;
+        return (lastArrive - firstArrive) / completedJobs;
     }
 
     public double getAvgWait(int i) {
@@ -114,16 +121,16 @@ public abstract class MssqCenter extends Center {
     }
 
     public double getAvgNode(int i) {
-        return area[0].node / lastDeparture;
+        return area[0].node / (lastDeparture - firstArrive);
     }
 
     public double getAvgQueue(int i) {
-        return area[0].queue / lastDeparture;
+        return area[0].queue / (lastDeparture - firstArrive);
     }
 
 
     //ritorna l'utilizzazione dell'i-esimo server del centro
     public double getUtilization(int i) {
-        return servers[i].service / lastDeparture;
+        return servers[i].service / (lastDeparture - firstArrive);
     }
 }

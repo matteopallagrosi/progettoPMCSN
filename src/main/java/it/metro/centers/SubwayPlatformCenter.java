@@ -88,4 +88,34 @@ public class SubwayPlatformCenter extends Center {
 
         System.out.println("");
     }
+
+    @Override
+    public double getAvgInterarrival(int i) {
+        return 0;
+    }
+
+    @Override
+    public double getAvgWait(int i) {
+        return 0;
+    }
+
+    @Override
+    public double getAvgDelay(int i) {
+        return 0;
+    }
+
+    @Override
+    public double getAvgNode(int i) {
+        return 0;
+    }
+
+    @Override
+    public double getAvgQueue(int i) {
+        return 0;
+    }
+
+    @Override
+    public double getUtilization(int i) {
+        return 0;
+    }
 }

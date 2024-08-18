@@ -11,6 +11,7 @@ import java.text.DecimalFormat;
 //Multi Server Loss System (quindi non è presente la coda)
 public abstract class MslsCenter extends Center {
 
+    public double firstArrive;
     public double lastArrive;                      //ultimo arrivo presso questo centro
     public double lastDeparture;
     public double arrivalJobs;                     //tiene traccia del numero totale di job che arrivano presso il centro
@@ -26,6 +27,13 @@ public abstract class MslsCenter extends Center {
     public int processArrival() {
         arrivalJobs++;
         lastArrive = currentEvent.getTime();
+
+        //setta il primo arrivo presso il centro corrente
+        //necessario per calcolare il corrente tau di simulazione del batch corrente per il calcolo delle statistiche
+        if (firstArrive == 0) {
+            firstArrive = currentEvent.getTime();
+        }
+
         //se è disponibile un server, il job viene servito
         //ritorna l'indice del server per cui deve essere prodotto un tempo di completamento
         if (numJobs < numServer) {
@@ -101,7 +109,7 @@ public abstract class MslsCenter extends Center {
         System.out.println("");
     }
     public double getAvgInterarrival(int i) {
-        return lastArrive / completedJobs;
+        return (lastArrive - firstArrive) / completedJobs;
     }
 
     public double getAvgWait(int i) {
@@ -113,7 +121,7 @@ public abstract class MslsCenter extends Center {
     }
 
     public double getAvgNode(int i) {
-        return area[0].node / lastDeparture;
+        return area[0].node / (lastDeparture - firstArrive);
     }
 
     public double getAvgQueue(int i) {
@@ -122,7 +130,7 @@ public abstract class MslsCenter extends Center {
 
     //ritorna l'utilizzazione dell'i-esimo server del centro
     public double getUtilization(int i) {
-        return servers[i].service / lastDeparture;
+        return servers[i].service / (lastDeparture - firstArrive);
     }
 
 }

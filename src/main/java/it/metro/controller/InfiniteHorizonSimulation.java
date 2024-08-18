@@ -23,7 +23,7 @@ public class InfiniteHorizonSimulation {
     }
 
     public static void main(String[] args) {
-        InfiniteHorizonSimulation infiniteHorizonSimulation = new InfiniteHorizonSimulation(128, 10000);
+        InfiniteHorizonSimulation infiniteHorizonSimulation = new InfiniteHorizonSimulation(60, 200792);
         infiniteHorizonSimulation.run();
     }
 
@@ -32,7 +32,6 @@ public class InfiniteHorizonSimulation {
     //quindi la dimensione del campione per la stima di ogni statistica ha dimensione numBatches
     public void run() {
         //Per ogni fascia oraria (cambia solo il lambda) devo runnare la simulazione a orizzonte infinito
-        //TODO settare la fascia oraria da simulare
         Simulation simulation = new Simulation();
         simulation.runInfiniteHorizonSimulation(numBatches, batchSize);
     }

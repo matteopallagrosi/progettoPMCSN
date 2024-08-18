@@ -15,6 +15,7 @@ import java.util.List;
 public abstract class MsmqCenter extends Center {
 
     public int[] queues;            //tiene traccia della popolazione in ogni coda del centro
+    public double [] firstArrive;   ////tiene traccia del primo arrivo in ogni server
     public double[] lastArrive;     //tiene traccia dell'ultimo arrivo in ogni server
     public double[] lastDeparture;  //tiene traccia dell'ultimo completamento per ogni server
 
@@ -25,6 +26,7 @@ public abstract class MsmqCenter extends Center {
         for (int i = 0; i < numServer; i++) {
             this.area[i] = new Area();
         }
+        this.firstArrive = new double[numServer];
         this.lastArrive = new double[numServer];
         this.lastDeparture = new double[numServer];
     }
@@ -63,6 +65,9 @@ public abstract class MsmqCenter extends Center {
         //altrimenti il job viene inserito in una delle code secondo la politica di accodamento creata
         int selectedQueue = selectQueue();
         queues[chosenServer]++;
+        if (firstArrive[chosenServer] == 0) {
+            firstArrive[chosenServer] = currentEvent.getTime();
+        }
         lastArrive[chosenServer] = currentEvent.getTime();
         return -1;
     }
@@ -174,7 +179,7 @@ public abstract class MsmqCenter extends Center {
 
     //i metodi sottostanti ritornano le statistiche dell'i-esimo centro (coppia server-coda)
     public double getAvgInterarrival(int i) {
-        return lastArrive[i] / servers[i].served;
+        return (lastArrive[i] - firstArrive[i]) / servers[i].served;
     }
 
     public double getAvgWait(int i) {
@@ -186,15 +191,15 @@ public abstract class MsmqCenter extends Center {
     }
 
     public double getAvgNode(int i) {
-        return area[i].node / lastDeparture[i];
+        return area[i].node / (lastDeparture[i] - firstArrive[i]);
     }
 
     public double getAvgQueue(int i) {
-        return area[i].queue / lastDeparture[i];
+        return area[i].queue / (lastDeparture[i] - firstArrive[i]);
     }
 
 
     public double getUtilization(int i) {
-        return servers[i].service / lastDeparture[i];
+        return servers[i].service / (lastDeparture[i] - firstArrive[i]);
     }
 }
