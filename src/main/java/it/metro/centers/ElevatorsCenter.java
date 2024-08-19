@@ -6,7 +6,7 @@ import it.metro.utils.Rvgs;
 public class ElevatorsCenter extends MssqCenter {
 
     public ElevatorsCenter(int numServer, Rvgs v) {
-        super(5, numServer, v);
+        super(5, numServer, v, "Elevators Center");
     }
 
     @Override

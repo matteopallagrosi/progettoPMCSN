@@ -25,12 +25,12 @@ import java.io.*;
 import java.util.*;
 import java.text.*;
 
-class Acs {
+public class Acs {
 
   static int K    = 1;               /* K is the maximum lag          */
   static int SIZE = K + 1;
 
-  public static void main(String[] args) throws IOException {
+  public static void autocorrelation(String fileName) throws IOException {
 
     int    i = 0;                   /* data point index              */
     int    j;                       /* lag index                     */
@@ -46,8 +46,7 @@ class Acs {
       cosum[j] = 0.0;
 
     String line;
-    InputStreamReader r = new InputStreamReader(System.in);
-    BufferedReader ReadThis = new BufferedReader(r);
+    BufferedReader ReadThis = new BufferedReader(new FileReader(fileName));
     try {                         /* the first K + 1 data values    */
       while (i < SIZE) {              /* initialize the hold array with */
         if ( (line = ReadThis.readLine()) != null) {

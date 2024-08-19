@@ -6,7 +6,7 @@ import it.metro.utils.Rvgs;
 public class ElectronicTicketCenter extends MssqCenter {
 
     public ElectronicTicketCenter(int numServer, Rvgs v) {
-        super(1, numServer, v);
+        super(1, numServer, v, "Electronic Ticket Center");
     }
 
     @Override

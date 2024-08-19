@@ -17,8 +17,8 @@ public abstract class MslsCenter extends Center {
     public double arrivalJobs;                     //tiene traccia del numero totale di job che arrivano presso il centro
     public double rejectedJob;                     //tiene traccia del numero di job che trovano tutti i server occupati all'arrivo
 
-    public MslsCenter(int id, int numServer, Rvgs v) {
-        super(id, numServer, v);
+    public MslsCenter(int id, int numServer, Rvgs v, String name) {
+        super(id, numServer, v, name);
         this.area = new Area[1];
         this.area[0] = new Area();
     }

@@ -14,7 +14,7 @@ public class SubwayPlatformCenter extends Center {
     final int seats = 300;                         //numero di posti disponibili sul treno
 
     public SubwayPlatformCenter(int numServer, Rvgs v) {
-        super(6, numServer, v);
+        super(6, numServer, v, "Subway Platform Center");
         this.area = new Area[1];
         this.area[0] = new Area();
     }

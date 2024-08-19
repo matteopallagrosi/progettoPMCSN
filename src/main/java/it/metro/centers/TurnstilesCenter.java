@@ -6,7 +6,7 @@ import it.metro.utils.Rvgs;
 public class TurnstilesCenter extends MsmqCenter {
 
     public TurnstilesCenter(int numServer, Rvgs v) {
-        super(3, numServer, v);
+        super(3, numServer, v, "Turnstiles Center");
     }
 
     public int getNextCenter() {

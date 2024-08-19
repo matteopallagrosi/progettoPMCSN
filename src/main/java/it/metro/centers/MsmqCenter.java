@@ -19,8 +19,8 @@ public abstract class MsmqCenter extends Center {
     public double[] lastArrive;     //tiene traccia dell'ultimo arrivo in ogni server
     public double[] lastDeparture;  //tiene traccia dell'ultimo completamento per ogni server
 
-    public MsmqCenter(int id, int numServer, Rvgs v) {
-        super(id, numServer, v);
+    public MsmqCenter(int id, int numServer, Rvgs v, String name) {
+        super(id, numServer, v, name);
         queues = new int[numServer];
         this.area = new Area[numServer];
         for (int i = 0; i < numServer; i++) {

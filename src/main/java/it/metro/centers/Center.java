@@ -8,7 +8,8 @@ import it.metro.utils.Time;
 
 public abstract class Center {
 
-    public final int ID;                       //identificativo univoco del centro
+    public final int ID;                //identificativo univoco del centro
+    public String name;                 //nome del centro
     public int numServer;               //numero di servers nel centro
     public int numJobs = 0;             //numero di jobs attualmente nel centro (servers + coda)
     public int completedJobs = 0;       //numero di jobs processati dal server
@@ -20,8 +21,9 @@ public abstract class Center {
     public int numBusyServers = 0;      //numero di server occupati del centro
 
 
-    public Center(int id, int numServer, Rvgs v) {
+    public Center(int id, int numServer, Rvgs v, String name) {
         ID = id;
+        this.name = name;
         this.numServer = numServer;         //inizializza il numero di server per il centro
         this.v = v;
         this.servers = new Server[numServer];

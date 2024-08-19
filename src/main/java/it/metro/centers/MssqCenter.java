@@ -15,8 +15,8 @@ public abstract class MssqCenter extends Center {
     public double lastArrive;                      //ultimo arrivo presso questo centro
     public double lastDeparture;                   //istante di completamento dell'ultimo job del centro
 
-    public MssqCenter(int id, int numServer, Rvgs v) {
-        super(id, numServer, v);
+    public MssqCenter(int id, int numServer, Rvgs v, String name) {
+        super(id, numServer, v, name);
         this.area = new Area[1];
         this.area[0] = new Area();
     }

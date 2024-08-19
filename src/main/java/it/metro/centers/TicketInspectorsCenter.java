@@ -6,7 +6,7 @@ import it.metro.utils.Rvgs;
 public class TicketInspectorsCenter extends MslsCenter {
 
     public TicketInspectorsCenter(int numServer, Rvgs v) {
-        super(4, numServer, v);
+        super(4, numServer, v, "Ticket Inspectors Center");
     }
 
     @Override

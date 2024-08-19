@@ -5,6 +5,7 @@ import it.metro.events.Event;
 import it.metro.events.EventType;
 import it.metro.utils.*;
 
+import java.io.*;
 import java.text.DecimalFormat;
 import java.util.*;
 
@@ -14,6 +15,7 @@ public class Simulation {
     private static double arrival = 0;
     static double STOP    = 2000000.0;                       //"close the door" --> il flusso di arrivo viene interrotto
     public boolean closeTheDoor = false;
+    private double arrivalRate = 0;
     private Time t;                                         //clock di simulazione
     private Rngs r;                                         //generatore di valori randomici Uniform(0,1)
     private Rvgs v;                                         //generatore di variate aleatorie
@@ -32,6 +34,7 @@ public class Simulation {
     //Run simulation
     public static void main(String[] args) {
         Simulation simulation = new Simulation();
+        simulation.setArrivalRate(0.166);
         simulation.run();
     }
 
@@ -86,10 +89,15 @@ public class Simulation {
         }
     }
 
+    //setta l'arrival rate da utilizzare nella simulazione
+    public void setArrivalRate(double rate) {
+        this.arrivalRate = rate;
+    }
+
     //genera il prossimo istante di arrivo (arrivi random = tempo di interarr. esp.)
     private double getArrival() {
         r.selectStream(0);
-        arrival += v.exponential(0.166);
+        arrival += v.exponential(arrivalRate);
         return (arrival);
     }
 
@@ -330,11 +338,139 @@ public class Simulation {
                 }
             }
         }
-        System.out.println("Controllo le statistiche");
 
         //Calcolare gli intervalli di confidenza per le diverse statistiche dei vari centri
-        //TODO
+        generateEstimate(matrix, numBatches);
+    }
 
+    private void generateEstimate(Statistics[][] matrix, int numBatches) {
+        for (Center center: centers) {
+            if ((center instanceof  MssqCenter) || (center instanceof  MslsCenter)) {
+                double[] avgInterrarivals = new double[numBatches];
+                double[] avgWait = new double[numBatches];
+                double[] avgDelay = new double[numBatches];
+                double[] avgNode = new double[numBatches];
+                double[] avgQueue = new double[numBatches];
+                double[] utilization = new double[numBatches];
+                for (int i = 0; i < numBatches; i++) {
+                    Statistics currentStatistics = matrix[center.ID - 1][i];
+                    avgInterrarivals[i] = currentStatistics.avgInterarrivals[0];
+                    avgWait[i] = currentStatistics.avgWait[0];
+                    avgDelay[i] = currentStatistics.avgDelay[0];
+                    avgNode[i] = currentStatistics.avgNode[0];
+                    avgQueue[i] = currentStatistics.avgQueue[0];
+                    //nei centri multiserver le utilizzazioni dei diversi server sono uguali per definizione, perciò possiamo considerare solo quelle del primo server
+                    utilization[i] = currentStatistics.utilization[0];
+                }
+                //stampo gli intervalli di confidenza per le diverse statistiche di questo centro
+                System.out.println("For " + center.name + ":");
+                System.out.println("interrarivals:");
+                Estimate.estimate(avgInterrarivals);
+                System.out.println("wait:");
+                Estimate.estimate(avgWait);
+                System.out.println("delay:");
+                Estimate.estimate(avgDelay);
+                System.out.println("jobs in node:");
+                Estimate.estimate(avgNode);
+                System.out.println("jobs in queue:");
+                Estimate.estimate(avgQueue);
+                System.out.println("utilization:");
+                Estimate.estimate(utilization);
+                System.out.println("autocorrelation between batches:");
+                //genera il file .dat da dare in input a acs per calcolo dell'autocorrelazione
+                generateDatFile(avgWait, center.name);
+                try {
+                    Acs.autocorrelation(center.name + ".dat");
+                } catch (IOException e) {
+                    System.out.println("Autocorrelation failed");
+                }
+                //elimina il file .dat dopo aver calcolato l'autocorrelazione in quanto non più necessario
+                File file = new File(center.name + ".dat");
+                file.delete();
+            }
+            //le coppie server-code di questo centro sono sottocentri a se stanti, e le statistiche sono quindi separate
+            else if (center instanceof  MsmqCenter) {
+                //per ogni coppia server-coda
+                for (int i = 0; i < center.numServer; i++) {
+                    double[] avgInterrarivals = new double[numBatches];
+                    double[] avgWait = new double[numBatches];
+                    double[] avgDelay = new double[numBatches];
+                    double[] avgNode = new double[numBatches];
+                    double[] avgQueue = new double[numBatches];
+                    double[] utilization = new double[numBatches];
+                    for (int j = 0; j < numBatches; j++) {
+                        Statistics currentStatistics = matrix[center.ID - 1][j];
+                        avgInterrarivals[j] = currentStatistics.avgInterarrivals[i];
+                        avgWait[j] = currentStatistics.avgWait[i];
+                        avgDelay[j] = currentStatistics.avgDelay[i];
+                        avgNode[j] = currentStatistics.avgNode[i];
+                        avgQueue[j] = currentStatistics.avgQueue[i];
+                        //nei centri multiserver le utilizzazioni dei diversi server sono uguali per definizione, perciò possiamo considerare solo quelle del primo server
+                        utilization[j] = currentStatistics.utilization[i];
+                    }
+                    //stampo gli intervalli di confidenza per le diverse statistiche di questo centro
+                    System.out.println("For " + center.name + ", server-queue " + i + ":");
+                    System.out.println("interrarivals:");
+                    Estimate.estimate(avgInterrarivals);
+                    System.out.println("wait:");
+                    Estimate.estimate(avgWait);
+                    System.out.println("delay:");
+                    Estimate.estimate(avgDelay);
+                    System.out.println("jobs in node:");
+                    Estimate.estimate(avgNode);
+                    System.out.println("jobs in queue:");
+                    Estimate.estimate(avgQueue);
+                    System.out.println("utilization:");
+                    Estimate.estimate(utilization);
+                    System.out.println("autocorrelation between batches:");
+                    //genera il file .dat da dare in input a acs per calcolo dell'autocorrelazione
+                    generateDatFile(avgWait, center.name + i);
+                    try {
+                        Acs.autocorrelation(center.name + i + ".dat");
+                    } catch (IOException e) {
+                        System.out.println("Autocorrelation failed");
+                    }
+                    File file = new File(center.name + i + ".dat");
+                    file.delete();
+                }
+            }
+        }
+
+        //genero l'intervallo di confidenza per le statistiche globali del sistema
+        double[] avgWait = new double[numBatches];
+        double[] avgNode = new double[numBatches];
+        for (int i = 0; i < numBatches; i++) {
+            Statistics currentStatistics = matrix[5][i];
+            avgWait[i] = currentStatistics.avgWait[0];
+            avgNode[i] = currentStatistics.avgNode[0];
+        }
+        System.out.println("For overall system:");
+        System.out.println("wait:");
+        Estimate.estimate(avgWait);
+        System.out.println("jobs in node:");
+        Estimate.estimate(avgNode);
+        System.out.println("autocorrelation between batches:");
+        generateDatFile(avgWait, "system");
+        try {
+            Acs.autocorrelation("system.dat");
+        } catch (IOException e) {
+            System.out.println("Autocorrelation failed");
+        }
+        File file = new File("system.dat");
+        file.delete();
+    }
+
+    private static void generateDatFile(double[] sample, String centerName) {
+        // Scrivere i valori double nel file
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(centerName + ".dat"))) {
+            for (double x : sample) {
+                // Scrive il double convertito in stringa e va a capo
+                writer.write(Double.toString(x));
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void generateStatistics(Statistics[][] matrix, int batchIndex, int processedJobs, double firstArriveSystem, double lastDepartureSystem) {
