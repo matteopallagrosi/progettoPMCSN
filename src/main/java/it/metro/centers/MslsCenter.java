@@ -40,7 +40,7 @@ public abstract class MslsCenter extends Center {
             numJobs++;
             lastService = getService();
             int serverIndex = findIdleServer();
-            Server selectedServer = servers[serverIndex];
+            Server selectedServer = servers.get(serverIndex);
             selectedServer.service += lastService;
             selectedServer.served++;
             selectedServer.idle = false;
@@ -65,6 +65,13 @@ public abstract class MslsCenter extends Center {
         //il server torna a essere libero
         currentEvent.getServer().idle = true;
         numBusyServers--;
+
+        //se necessario rimuove il server una volta completato il job per raggiungere la configurazione desiderata
+        if (numServerToRemove != 0) {
+            servers.remove(currentEvent.getServer());
+            numServer--;
+            numServerToRemove--;
+        }
         return -1;
     }
 
@@ -101,8 +108,8 @@ public abstract class MslsCenter extends Center {
         System.out.println("\nthe server statistics are:\n");
         System.out.println("    server     utilization     avg service      share");
         for (int s = 0; s < numServer; s++) {
-            System.out.print("       " + s + "          " + g.format(servers[s].service / lastDeparture) + "            ");
-            System.out.println(f.format(servers[s].service / servers[s].served) + "         " + g.format(servers[s].served / (double)completedJobs));
+            System.out.print("       " + s + "          " + g.format(servers.get(s).service / lastDeparture) + "            ");
+            System.out.println(f.format(servers.get(s).service / servers.get(s).served) + "         " + g.format(servers.get(s).served / (double)completedJobs));
         }
         //share = percentuale di job processati da quel server sul totale
 
@@ -130,7 +137,7 @@ public abstract class MslsCenter extends Center {
 
     //ritorna l'utilizzazione dell'i-esimo server del centro
     public double getUtilization(int i) {
-        return servers[i].service / (lastDeparture - firstArrive);
+        return servers.get(i).service / (lastDeparture - firstArrive);
     }
 
 }

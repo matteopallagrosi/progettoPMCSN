@@ -37,7 +37,7 @@ public abstract class MssqCenter extends Center {
         if (numJobs <= numServer) {
             lastService = getService();
             int serverIndex = findIdleServer();
-            Server selectedServer = servers[serverIndex];
+            Server selectedServer = servers.get(serverIndex);
             selectedServer.service += lastService;
             selectedServer.served++;
             selectedServer.idle = false;
@@ -56,13 +56,21 @@ public abstract class MssqCenter extends Center {
         numJobs -= 1;
         //aggiorna l'ultimo completamento presso il server coinvolto (necessario per selezionare il server libero da più tempo)
         currentEvent.getServer().lastDeparture = currentEvent.getTime();
-        //se è presente almeno un job in coda, questo viene prelevato e mandato in servizio nel server appena liberato
-        if (numJobs >= numServer) {
+        //se è presente almeno un job in coda (e non devo rimuovere il server per il cambiamento di configurazione), questo viene prelevato e mandato in servizio nel server appena liberato
+        if ((numJobs >= numServer) && (numServerToRemove == 0)) {
             lastService = getService();
             currentEvent.getServer().service += lastService;
             currentEvent.getServer().served++;
             //il controller produce un evento di completamento
             return 0;
+        }
+        //se ci sono ancora server da rimuovere per cambiare la configurazione del centro
+        else if (numServerToRemove != 0) {
+            //rimuovo il server che si è appena liberato
+            servers.remove(currentEvent.getServer());
+            numServer--;
+            numBusyServers--;
+            numServerToRemove--;
         }
         //altrimenti il server torna a essere libero
         else {
@@ -100,8 +108,8 @@ public abstract class MssqCenter extends Center {
         System.out.println("\nthe server statistics are:\n");
         System.out.println("    server     utilization     avg service      share");
         for (int s = 0; s < numServer; s++) {
-            System.out.print("       " + s + "          " + g.format(servers[s].service / lastDeparture) + "            ");
-            System.out.println(f.format(servers[s].service / servers[s].served) + "         " + g.format(servers[s].served / (double)completedJobs));
+            System.out.print("       " + s + "          " + g.format(servers.get(s).service / lastDeparture) + "            ");
+            System.out.println(f.format(servers.get(s).service / servers.get(s).served) + "         " + g.format(servers.get(s).served / (double)completedJobs));
         }
         //share = percentuale di job processati da quel server sul totale
 
@@ -131,6 +139,6 @@ public abstract class MssqCenter extends Center {
 
     //ritorna l'utilizzazione dell'i-esimo server del centro
     public double getUtilization(int i) {
-        return servers[i].service / (lastDeparture - firstArrive);
+        return servers.get(i).service / (lastDeparture - firstArrive);
     }
 }

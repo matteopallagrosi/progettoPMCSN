@@ -9,6 +9,7 @@ public class Server {
     public long served = 0;                    //numero di job serviti
     public double lastDeparture = 0;           //tempo dell'ultima partenza di un job dal server
     public Event lastEvent;                    //l'ultimo evento processato da quel server
+    public boolean active = true;              //se il server è attivo può prendere in carico job
 
     public Server(int id) {
         this.id = id;

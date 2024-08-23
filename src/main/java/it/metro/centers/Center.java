@@ -6,6 +6,9 @@ import it.metro.utils.Rvgs;
 import it.metro.utils.Server;
 import it.metro.utils.Time;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public abstract class Center {
 
     public final int ID;                //identificativo univoco del centro
@@ -17,8 +20,9 @@ public abstract class Center {
     public Area[] area;
     public double lastService;          //ultimo tempo di servizio generato
     public Rvgs v;
-    public Server[] servers;            //lista di server del centro
+    public List<Server> servers;            //lista di server del centro
     public int numBusyServers = 0;      //numero di server occupati del centro
+    public int numServerToRemove = 0;   //quando questa variabile è != 0, il server presso cui un job è stato appena completato verrà rimosso
 
 
     public Center(int id, int numServer, Rvgs v, String name) {
@@ -26,9 +30,10 @@ public abstract class Center {
         this.name = name;
         this.numServer = numServer;         //inizializza il numero di server per il centro
         this.v = v;
-        this.servers = new Server[numServer];
+        this.servers = new ArrayList<>();
         for (int i = 0; i < numServer; i++) {
-            this.servers[i] = new Server(i);
+            Server newServer = new Server(i);
+            servers.add(newServer);
         }
     }
 
@@ -54,13 +59,13 @@ public abstract class Center {
     protected int findIdleServer() {
         int s;
         int i = 0;
-        while (!servers[i].idle) {
+        while (!servers.get(i).idle) {
             i++;
         }
         s = i;
         i++;
         while (i < numServer) {
-            if (servers[i].idle && (servers[i].lastDeparture < servers[s].lastDeparture)) {
+            if (servers.get(i).idle && (servers.get(i).lastDeparture < servers.get(s).lastDeparture)) {
                 s = i;
             }
             i++;

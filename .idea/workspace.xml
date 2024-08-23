@@ -4,22 +4,16 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Aggiunta simulazione a orizzonte infinito con batch means">
+    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Terminata simulazione a orizzonte infinito con batch means">
+      <change afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/FiniteHorizonSImulation.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/Center.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/Center.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElectronicTicketCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElectronicTicketCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElevatorsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElevatorsCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MslsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MslsCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MssqCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MssqCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketInspectorsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketInspectorsCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TurnstilesCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TurnstilesCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/InfiniteHorizonSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/InfiniteHorizonSimulation.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/utils/Acs.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/utils/Acs.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/utils/Estimate.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/utils/Estimate.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/events/EventType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/events/EventType.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/utils/Server.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/utils/Server.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,35 +52,49 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.InfiniteHorizonSimulation.executor": "Run",
-    "Application.Simulation.executor": "Run",
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "WebServerToolWindowFactoryState": "false",
-    "git-widget-placeholder": "master",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/matteo/IdeaProjects/progettoPMCSN/src/main/java/it/metro/utils",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "advanced.settings",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.FiniteHorizonSImulation.executor&quot;: &quot;Run&quot;,
+    &quot;Application.InfiniteHorizonSimulation.executor&quot;: &quot;Run&quot;,
+    &quot;Application.Simulation.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/matteo/IdeaProjects/progettoPMCSN/src/main/java/it/metro/utils&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/main/java/it/metro/utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.InfiniteHorizonSimulation">
+  <component name="RunManager" selected="Application.FiniteHorizonSImulation">
+    <configuration name="FiniteHorizonSImulation" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="it.metro.controller.FiniteHorizonSImulation" />
+      <module name="progettoPMCSN" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="it.metro.controller.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="InfiniteHorizonSimulation" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="it.metro.controller.InfiniteHorizonSimulation" />
       <module name="progettoPMCSN" />
@@ -115,8 +123,9 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.InfiniteHorizonSimulation" />
+        <item itemvalue="Application.FiniteHorizonSImulation" />
         <item itemvalue="Application.Simulation" />
+        <item itemvalue="Application.InfiniteHorizonSimulation" />
       </list>
     </recent_temporary>
   </component>
@@ -157,7 +166,11 @@
       <workItem from="1723885682706" duration="13653000" />
       <workItem from="1723975243610" duration="2134000" />
       <workItem from="1723985988493" duration="6809000" />
-      <workItem from="1724058834724" duration="11060000" />
+      <workItem from="1724058834724" duration="11178000" />
+      <workItem from="1724143169316" duration="9158000" />
+      <workItem from="1724231316811" duration="13741000" />
+      <workItem from="1724330609287" duration="10397000" />
+      <workItem from="1724419308058" duration="6472000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -263,7 +276,15 @@
       <option name="project" value="LOCAL" />
       <updated>1723999826636</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="Terminata simulazione a orizzonte infinito con batch means">
+      <option name="closed" value="true" />
+      <created>1724081701480</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1724081701480</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -295,6 +316,18 @@
     <MESSAGE value="Aggiunte statistiche overall" />
     <MESSAGE value="Aggiunta simulazione a orizzonte infinito (da terminare)" />
     <MESSAGE value="Aggiunta simulazione a orizzonte infinito con batch means" />
-    <option name="LAST_COMMIT_MESSAGE" value="Aggiunta simulazione a orizzonte infinito con batch means" />
+    <MESSAGE value="Terminata simulazione a orizzonte infinito con batch means" />
+    <option name="LAST_COMMIT_MESSAGE" value="Terminata simulazione a orizzonte infinito con batch means" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java</url>
+          <line>98</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

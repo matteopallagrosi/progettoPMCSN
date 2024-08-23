@@ -13,7 +13,7 @@ public class Simulation {
 
     private Queue<Event> events;                            //lista che tiene traccia degli eventi generati durante la simulazione
     private static double arrival = 0;
-    static double STOP    = 2000000.0;                       //"close the door" --> il flusso di arrivo viene interrotto
+    private double STOP    = 2000000.0;                       //"close the door" --> il flusso di arrivo viene interrotto
     public boolean closeTheDoor = false;
     private double arrivalRate = 0;
     private Time t;                                         //clock di simulazione
@@ -26,6 +26,7 @@ public class Simulation {
     private ElevatorsCenter elevatorsCenter;
     private SubwayPlatformCenter subwayPlatformCenter;
     private Center[] centers;
+    private int maxNumTurnstiles = 4;
     private int arrivalsTurtsiles = 0;
     private int arrivalsElectronic = 0;
     private int arrivalsTicket = 0;
@@ -39,17 +40,24 @@ public class Simulation {
     }
 
     //Inizializza la configurazione dei vari centri
-    private void initCenters() {
+    private void initCenters(int[] config) {
         centers = new Center[6];
-        electronicTicketCenter = new ElectronicTicketCenter(4, v);
+        electronicTicketCenter = new ElectronicTicketCenter(config[0], v);
         centers[0] = electronicTicketCenter;
-        ticketCenter = new TicketCenter(4, v);
+        ticketCenter = new TicketCenter(config[1], v);
         centers[1] = ticketCenter;
-        turnstilesCenter = new TurnstilesCenter(4, v);
+        //il centro dei tornelli viene creato con il massimo numero di tornelli possibile
+        //in ogni fascia oraria sarà attivo un numero di tornelli (<=maxNumTurnstiles) pari alla configurazione desiderata
+        turnstilesCenter = new TurnstilesCenter(maxNumTurnstiles, v);
+        //di default i tornelli sono tutti attivi, disattivo quelli in eccesso secondo la configurazione della prima fascia oraria
+        for (int i = 0; i < (maxNumTurnstiles - config[2]); i++) {
+            turnstilesCenter.servers.get(i).active = false;
+        }
+        turnstilesCenter.numActiveServer = config[2];
         centers[2] = turnstilesCenter;
-        ticketInspectorsCenter = new TicketInspectorsCenter(4, v);
+        ticketInspectorsCenter = new TicketInspectorsCenter(config[3], v);
         centers[3] = ticketInspectorsCenter;
-        elevatorsCenter = new ElevatorsCenter(4, v);
+        elevatorsCenter = new ElevatorsCenter(config[4], v);
         centers[4] = elevatorsCenter;
         subwayPlatformCenter = new SubwayPlatformCenter(1, v);
         centers[5] = subwayPlatformCenter;
@@ -59,6 +67,15 @@ public class Simulation {
         r = new Rngs();                  //istanzia la libreria per la generazione dei valori randomici
         r.plantSeeds(123456789);      //inizializza seed da cui produce i seed dei diversi stream
         v = new Rvgs(r);                 //istanzia la libreria per la generazione delle variate aleatorie
+    }
+
+    public void initSeed(Rngs r, Rvgs v) {
+        this.r = r;
+        this.v = v;
+    }
+
+    public void setStop(double stopTime) {
+        this.STOP = stopTime;
     }
 
     //inizializza la lista degli eventi, mantenuta ordinata secondo il clock degli eventi
@@ -92,6 +109,179 @@ public class Simulation {
     //setta l'arrival rate da utilizzare nella simulazione
     public void setArrivalRate(double rate) {
         this.arrivalRate = rate;
+    }
+
+    //Cambia la configurazione corrente dei centri
+    public void changeConfigurationCenters(int[] newConfig) {
+        for (Center center : centers) {
+            if (center instanceof MssqCenter) {
+                //nel caso in cui aumenta il numero di server rispetto alla configurazione precedente
+                if (newConfig[center.ID-1] > center.numServer) {
+                    int oldNumServer = center.numServer;
+                    center.numServer = newConfig[center.ID - 1];
+                    //aggiungo alla lista dei server del centro i nuovi server (per default sono idle alla creazione)
+                    for (int i = 0; i < (center.numServer - oldNumServer); i++) {
+                        Server newServer = new Server(oldNumServer + i);
+                        center.servers.add(newServer);
+                    }
+                    //se sono presenti job in coda, questi occuperanno i nuovi server
+                    if (center.numJobs > oldNumServer) {
+                        //per ogni job in coda (center.numJobs - oldNumServer = num. job in coda)
+                        for (int i = 0; i < (center.numJobs - oldNumServer); i++) {
+                            //il job è mandato in servizio se presente ancora un server libero
+                            if (center.numBusyServers < center.numServer) {
+                                Server idleServer = center.servers.get(oldNumServer + i);
+                                assert idleServer.idle;
+                                //il server selezionato non è più idle
+                                idleServer.idle = false;
+                                //aumenta il numero di server occupati
+                                center.numBusyServers++;
+                                //produce un tempo di servizio per il job
+                                center.lastService = center.getService();
+                                idleServer.service += center.lastService;
+                                idleServer.served++;
+                                //produce l'evento di completamento presso quel server
+                                events.add(generateDepartureEvent(center, idleServer));
+                            }
+                            //altrimenti non ci sono più server liberi e i job rimanenti restano in coda
+                            else {
+                                break;
+                            }
+                        }
+                    }
+                }
+                //se diminuisce il numero di server
+                else if (newConfig[center.ID-1] < center.numServer) {
+                    //se sono presenti almeno (center.numServer - newConfig[center.ID-1]) server liberi
+                    if ((center.numServer - center.numBusyServers) >= (center.numServer - newConfig[center.ID-1])) {
+                        int numServerToRemove = center.numServer - newConfig[center.ID-1];
+                        //elimino i server liberi così da raggiungere la configurazione desiderata
+                        int deletedServer = 0;
+                        List<Server> serversToRemove = new ArrayList<>();
+                        for (Server server : center.servers) {
+                            //se il server è libero posso eliminarlo
+                            if (server.idle) {
+                                serversToRemove.add(server);
+                                deletedServer++;
+                                if (deletedServer == numServerToRemove) {
+                                    break;
+                                }
+                            }
+                        }
+                        center.servers.removeAll(serversToRemove);
+                        center.numServer = newConfig[center.ID-1];
+                    }
+                    //devo eliminare dei server occupati, ma solo dopo il completamento del job al loro interno
+                    else {
+                        int deletedServer = 0;
+                        int numServerToRemove = center.numServer - newConfig[center.ID-1];
+                        List<Server> serversToRemove = new ArrayList<>();
+                        //tutti i server liberi vengono eliminati
+                        for (Server server : center.servers) {
+                            if (server.idle) {
+                                serversToRemove.add(server);
+                                deletedServer++;
+                                center.numServer--;
+                            }
+                        }
+                        center.servers.removeAll(serversToRemove);
+                        //resta questo numero di server da rimuovere, necessariamente tra quelli occupati
+                        numServerToRemove -= deletedServer;
+                        //Nel momento in cui avvengono completamenti presso questo centro e i server si liberano, questi verranno rimossi
+                        center.numServerToRemove = numServerToRemove;
+                    }
+                }
+            }
+            else if (center instanceof MslsCenter) {
+                //nel caso in cui aumenta il numero di server rispetto alla configurazione precedente
+                if (newConfig[center.ID-1] > center.numServer) {
+                    int oldNumServer = center.numServer;
+                    center.numServer = newConfig[center.ID - 1];
+                    //aggiungo alla lista dei server del centro i nuovi server (per default sono idle alla creazione)
+                    for (int i = 0; i < (center.numServer - oldNumServer); i++) {
+                        Server newServer = new Server(oldNumServer + i);
+                        center.servers.add(newServer);
+                    }
+                }
+                //se invece diminuisce il numero di server rispetto alla configurazione precedente
+                else if (newConfig[center.ID-1] < center.numServer) {
+                    //se sono presenti almeno (center.numServer - newConfig[center.ID-1]) server liberi
+                    if ((center.numServer - center.numBusyServers) >= (center.numServer - newConfig[center.ID-1])) {
+                        int numServerToRemove = center.numServer - newConfig[center.ID-1];
+                        //elimino i server liberi così da raggiungere la configurazione desiderata
+                        int deletedServer = 0;
+                        List<Server> serversToRemove = new ArrayList<>();
+                        for (Server server : center.servers) {
+                            //se il server è libero posso eliminarlo
+                            if (server.idle) {
+                                serversToRemove.add(server);
+                                deletedServer++;
+                                if (deletedServer == numServerToRemove) {
+                                    break;
+                                }
+                            }
+
+                        }
+                        center.servers.removeAll(serversToRemove);
+                        center.numServer = newConfig[center.ID-1];
+                    }
+                    //devo eliminare dei server occupati, ma solo dopo il completamento del job al loro interno
+                    else {
+                        int deletedServer = 0;
+                        int numServerToRemove = center.numServer - newConfig[center.ID-1];
+                        List<Server> serversToRemove = new ArrayList<>();
+                        //tutti i server liberi vengono eliminati
+                        for (Server server : center.servers) {
+                            if (server.idle) {
+                                serversToRemove.add(server);
+                                deletedServer++;
+                                center.numServer--;
+                            }
+                        }
+                        center.servers.removeAll(serversToRemove);
+                        //resta questo numero di server da rimuovere, necessariamente tra quelli occupati
+                        numServerToRemove -= deletedServer;
+                        //Nel momento in cui avvengono completamenti presso questo centro e i server si liberano, questi verranno rimossi
+                        center.numServerToRemove = numServerToRemove;
+                    }
+                }
+            }
+            else if (center instanceof MsmqCenter) {
+                //si presuppone che la nuova configurazione sia sempre <= maxNumTurstiles
+                assert newConfig[center.ID-1] <= maxNumTurnstiles;
+                //nel caso in cui aumenta il numero di server-coda attivi rispetto alla configurazione precedente
+                if (newConfig[center.ID-1] > ((MsmqCenter) center).numActiveServer) {
+                    int numServerToActive = newConfig[center.ID-1] - ((MsmqCenter) center).numActiveServer;
+                    int i = 0;
+                    while (numServerToActive != 0) {
+                        if (!center.servers.get(i).active) {
+                            center.servers.get(i).active = true;
+                            numServerToActive--;
+                        }
+                        i++;
+                    }
+                    ((MsmqCenter) center).numActiveServer = newConfig[center.ID-1];
+                }
+                //se invece diminuisce il numero di server attivi
+                else if (newConfig[center.ID-1] < ((MsmqCenter) center).numActiveServer) {
+                    //se sono presenti server-code vuote a sufficienza, disattivo quei centri
+                    int numServerToDeactivate = ((MsmqCenter) center).numActiveServer - newConfig[center.ID-1];
+                    for (int i = 0; i < center.numServer; i++) {
+                        //se trovo un server attualmente attivo, idle e con coda vuota lo disattivo immediatamente
+                        if (center.servers.get(i).idle && center.servers.get(i).active && ((MsmqCenter) center).queues[i] == 0) {
+                            center.servers.get(i).active = false;
+                            numServerToDeactivate--;
+                            ((MsmqCenter) center).numActiveServer--;
+                        }
+                        if (numServerToDeactivate == 0) {
+                            break;
+                        }
+                    }
+                    //se rimangono ancora server da disattivare (numServerToDeactivate != 0), devo disattivare i server attivi ma non vuoti una volta svuotati
+                    center.numServerToRemove = numServerToDeactivate;
+                }
+            }
+        }
     }
 
     //genera il prossimo istante di arrivo (arrivi random = tempo di interarr. esp.)
@@ -148,10 +338,28 @@ public class Simulation {
         }
     }
 
-    //Esegue una singola replica della simulazione (usata per fare la verifica del modello)
+    //genera gli eventi di cambiamento di fascia oraria (che producono un cambiamento del tasso d'arrivo)
+    //aggiunge questi eventi alla lista degli eventi
+    private void generateSlotChange() {
+        //il clock di simulazione parte da 0 secondi (corrispondente all'orario 5.30)
+        //2^a fascia oraria (7.30-10.30) ; 7.30 = 7200 s (trascorsi dalle 5.30)
+        events.add(new Event(EventType.SLOTCHANGE, 7200));
+        //3^a fascia oraria (10.30-14-30) ; 10.30 = 18000 s (trascorsi dalle 5.30)
+        events.add(new Event(EventType.SLOTCHANGE, 18000));
+        //4^a fascia oraria (14.30-15-30) ; 14.30 = 32400 s (trascorsi dalle 5.30)
+        events.add(new Event(EventType.SLOTCHANGE, 32400));
+        //5^a fascia oraria (15.30-18-30) ; 15.30 = 36000 s (trascorsi dalle 5.30)
+        events.add(new Event(EventType.SLOTCHANGE, 36000));
+        //6^a fascia oraria (18.30-20-30) ; 18.30 = 46800 s (trascorsi dalle 5.30)
+        events.add(new Event(EventType.SLOTCHANGE, 46800));
+        //7^a fascia oraria (20.30-23-30) ; 20.30 = 54000 s (trascorsi dalle 5.30)
+        events.add(new Event(EventType.SLOTCHANGE, 54000));
+    }
+
+    //Esegue una singola replica della simulazione
     private void run() {
         this.initGenerators();
-        this.initCenters();
+        this.initCenters(new int[]{4,4,4,4,4});
         this.initEvents();
 
         //inizializza il clock di simulazione
@@ -194,7 +402,7 @@ public class Simulation {
 
                 //se il job è stato mandato in servizio produce l'evento di completamento
                 if (serverDeparture != -1) {
-                    events.add(generateDepartureEvent(currentCenter, currentCenter.servers[serverDeparture]));
+                    events.add(generateDepartureEvent(currentCenter, currentCenter.servers.get(serverDeparture)));
                 }
                 //se il job non è stato mandato in servizio, e il centro corrente è quello dei controllori, il job deve raggiungere direttamente il centro successivo
                 else if (currentCenter == ticketInspectorsCenter) {
@@ -237,7 +445,7 @@ public class Simulation {
         int batchIndex = 0;                                                                      //tiene traccia del batch correntemente simulato
         Statistics[][] matrix = new Statistics[6][numBatches];      //matrice che tiene traccia delle statistiche medie per ogni centro (e anche overall del sistema) e per ogni batch
         this.initGenerators();
-        this.initCenters();
+        this.initCenters(new int[]{4,4,4,4,4});
         this.initEvents();
         double firstArriveSystem = 0;
         double lastDepartureSystem = 0;
@@ -294,7 +502,7 @@ public class Simulation {
 
                 //se il job è stato mandato in servizio produce l'evento di completamento
                 if (serverDeparture != -1) {
-                    events.add(generateDepartureEvent(currentCenter, currentCenter.servers[serverDeparture]));
+                    events.add(generateDepartureEvent(currentCenter, currentCenter.servers.get(serverDeparture)));
                 }
                 //se il job non è stato mandato in servizio, e il centro corrente è quello dei controllori, il job deve raggiungere direttamente il centro successivo
                 else if (currentCenter == ticketInspectorsCenter) {
@@ -342,6 +550,116 @@ public class Simulation {
         //Calcolare gli intervalli di confidenza per le diverse statistiche dei vari centri
         generateEstimate(matrix, numBatches);
     }
+
+
+    //esegue una singola replica della simulazione a orizzonte finito, che simula tutte le fasce orarie
+    //sulle 18 ore di operatività della metropolitana
+    public void runFiniteHorizonSimulation(int[][] configCenters, double[] slotRates) {
+        //inizializza i centri con la configurazione della prima fascia oraria
+        this.initCenters(configCenters[0]);
+        this.initEvents();
+        //indice che tiene traccia della fascia oraria corrente
+        int slotIndex = 0;
+
+        //inizializza il clock di simulazione
+        t = new Time(0, 0);
+
+        //produce gli eventi di cambiamento di fascia oraria
+        generateSlotChange();
+
+        //configura il tasso di arrivo della prima fascia oraria
+        setArrivalRate(slotRates[slotIndex]);
+        slotIndex++;
+
+        //produce il primo evento, che è necessariamente un arrivo
+        events.add(generateArrivalEvent());
+
+        //produce il primo arrivo del treno
+        generateTrainArrivalEvent();
+
+        //procede a processare gli eventi, finché non si supera il "close the door" e la lista degli eventi non viene svuotata
+        while (!closeTheDoor || !events.isEmpty()) {
+            //estraggo il prossimo evento (in ordine di clock di simulazione)
+            Event event = events.poll();
+
+            //recupera il centro a cui è diretto l'evento
+            Center currentCenter = event.getCenter();
+
+            //aggiorna le statistiche del centro interessato dall'evento (e aggiorna l'evento corrente)
+            //currentCenter.updateStatistics(event);
+
+            if (event.getType() != EventType.SLOTCHANGE) {
+                currentCenter.currentEvent = event;
+            }
+
+            //aggiorna il clock di simulazione
+            t.current = event.getTime();
+
+            //processa l'evento di arrivo
+            if (event.getType() == EventType.ARRIVAL) {
+                int serverDeparture = currentCenter.processArrival();
+
+                //produce l'arrivo successivo dall'esterno solo quando viene processato un arrivo "nuovo" (ossia dall'esterno, non conseguente a un completamento)
+                if (event.isExternal()) {
+                    Event newArrival = generateArrivalEvent();
+                    if (newArrival.getTime() > STOP) {
+                        t.last = t.current;
+                        closeTheDoor = true;
+                    } else {
+                        events.add(newArrival);
+                    }
+                }
+
+                //se il job è stato mandato in servizio produce l'evento di completamento
+                if (serverDeparture != -1) {
+                    events.add(generateDepartureEvent(currentCenter, currentCenter.servers.get(serverDeparture)));
+                }
+                //se il job non è stato mandato in servizio, e il centro corrente è quello dei controllori, il job deve raggiungere direttamente il centro successivo
+                else if (currentCenter == ticketInspectorsCenter) {
+                    generateArrivalNextCenter(event);
+                }
+            }
+            //processa l'evento di completamento
+            else if (event.getType() == EventType.DEPARTURE) {
+                int generateDeparture = currentCenter.processDeparture();
+                //se il completamento corrente ha portato in servizio il job successivo, produce un nuovo evento di completamento
+                if (generateDeparture != -1) {
+                    events.add(generateDepartureEvent(currentCenter, event.getServer()));
+                }
+
+                //genera l'evento di arrivo presso il centro successivo conseguente al completamento presso il centro corrente
+                generateArrivalNextCenter(event);
+            }
+            //processa l'arrivo di un treno
+            else if (event.getType() == EventType.TRAINARRIVAL) {
+                //All'arrivo di un treno si verifica la partenza dei passeggeri dalla banchina del treno, i quali lasciano quindi il sistema
+                subwayPlatformCenter.processDeparture();
+
+                //genero il prossimo evento di arrivo del treno
+                generateTrainArrivalEvent();
+            }
+            //processa l'evento di cambiamento della fascia oraria
+            else if (event.getType() == EventType.SLOTCHANGE) {
+                //configura il tasso di arrivo della nuova fascia oraria
+                setArrivalRate(slotRates[slotIndex]);
+
+                //modifica i centri con la configurazione per la nuova fascia oraria
+                changeConfigurationCenters(configCenters[slotIndex]);
+                slotIndex++;
+
+            }
+        }
+        System.out.println("turstiles: " + arrivalsTurtsiles);
+        System.out.println("electronic " + arrivalsElectronic);
+        System.out.println("ticket: " + arrivalsTicket);
+        //stampa le statistiche di ogni centro
+        //printCentersStatistics();
+
+        //stampa le statistiche dell'intero sistema
+        //printSystemStatistics();
+
+    }
+
 
     private void generateEstimate(Statistics[][] matrix, int numBatches) {
         for (Center center: centers) {
@@ -520,15 +838,15 @@ public class Simulation {
                 center.area[0].queue = 0;
                 ((MssqCenter)center).firstArrive = 0;
                 for (int i = 0; i < center.numServer; i++) {
-                    center.servers[i].service = 0;
-                    center.servers[i].served = 0;
+                    center.servers.get(i).service = 0;
+                    center.servers.get(i).served = 0;
                 }
             }
             else if (center instanceof MsmqCenter) {
                 for (int i = 0; i < center.numServer; i++) {
                     center.completedJobs = 0;
-                    center.servers[i].service = 0;
-                    center.servers[i].served = 0;
+                    center.servers.get(i).service = 0;
+                    center.servers.get(i).served = 0;
                     center.area[i].node = 0;
                     center.area[i].queue = 0;
                     ((MsmqCenter)center).firstArrive[i] = 0;
@@ -541,8 +859,8 @@ public class Simulation {
                 center.area[0].node = 0;
                 ((MslsCenter)center).firstArrive = 0;
                 for (int i = 0; i < center.numServer; i++) {
-                    center.servers[i].service = 0;
-                    center.servers[i].served = 0;
+                    center.servers.get(i).service = 0;
+                    center.servers.get(i).served = 0;
                 }
             }
         }

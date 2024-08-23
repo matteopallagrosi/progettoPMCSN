@@ -1,5 +1,5 @@
 package it.metro.events;
 
 public enum EventType {
-    ARRIVAL, DEPARTURE, TRAINARRIVAL
+    ARRIVAL, DEPARTURE, TRAINARRIVAL, SLOTCHANGE
 }
