@@ -8,6 +8,7 @@ import java.util.Arrays;
 public class FiniteHorizonSImulation {
 
     private final int NUM_REPLICATIONS = 128;
+    Simulation[] simulations = new Simulation[NUM_REPLICATIONS];
 
     public static void main(String[] args) {
         FiniteHorizonSImulation finiteHorizonSImulation = new FiniteHorizonSImulation();
@@ -25,19 +26,24 @@ public class FiniteHorizonSImulation {
 
         //configurazione dei centri (numero server per ogni centro) nelle diverse fasce orarie
         //ogni riga corrisponde a una fascia oraria, l'i-esima colonna di una riga corrisponde al numero di server in quella fascia per l'i-esimo centro
-        int[][] configCenters = new int[][] {{1,2,1,1,2}, {4,4,4,2,2}, {3,4,4,1,2}, {7,8,3,4,2}, {4,4,2,2,2}, {4,4,4,2,2}, {4,4,4,2,2}};
+        int[][] configCenters = new int[][] {{3,3,3,3,3}, {4,4,4,2,2}, {3,4,4,2,4}, {5,5,3,4,2}, {4,4,2,2,2}, {4,4,4,2,2}, {4,4,4,2,2}};
+        //int[][] configCenters = new int[][] {{4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}};
 
         //tassi di arrivo di ognuna delle fasce orarie
         double[] slotRates = new double[] {0.166, 0.166, 0.166, 0.166, 0.166, 0.166, 0.166};
 
         //esegue NUM_REPLICATIONS repliche, ciascuna delle quali simula le 18 ore di operatività della metropolitana
-        for (int i = 0; i < 1; i++) {
+        for (int i = 0; i < NUM_REPLICATIONS; i++) {
+            System.out.println("Replica n. " + (i+1));
             Simulation simulation = new Simulation();
             //gli stati iniziali di ciascuno stream saranno gli stati finali della replica precedente
             simulation.initSeed(r, v);
             //L'arrivo degli utenti viene interrotto dopo 18 ore = 648000 (alle 23.30 orario di chiusura della metro, aperta alle 5.30)
             simulation.setStop(64800);
             simulation.runFiniteHorizonSimulation(configCenters, slotRates);
+            //TODO devo costruire un array di matrici dentro a simulation
+            simulations[i] = simulation;
         }
+        System.out.println("FINITO!");
     }
 }

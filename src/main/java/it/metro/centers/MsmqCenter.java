@@ -19,6 +19,10 @@ public abstract class MsmqCenter extends Center {
     public double[] lastArrive;     //tiene traccia dell'ultimo arrivo in ogni server
     public double[] lastDeparture;  //tiene traccia dell'ultimo completamento per ogni server
     public int numActiveServer;     //tiene traccia del numero di tornelli correntemente attivo
+    public double totalService = 0;
+    public double totalServed = 0;
+    public double totalAreaNode = 0;
+    public double totalAreaQueue = 0;
 
     public MsmqCenter(int id, int numServer, Rvgs v, String name) {
         super(id, numServer, v, name);
@@ -37,7 +41,7 @@ public abstract class MsmqCenter extends Center {
 
         //caso con ripartizione uniforme del flusso tra serventi (solo per check)
         //modifico il centro in modo da verificare se avendo Poisson in ingresso ho Poisson anche in uscita
-        /*v.rngs.selectStream(20);
+        v.rngs.selectStream(20);
         int chosenServer = (int)v.equilikely(0, numServer-1);
         if (servers.get(chosenServer).idle) {
             lastService = getService();
@@ -47,11 +51,11 @@ public abstract class MsmqCenter extends Center {
             numBusyServers++;
             lastArrive[chosenServer] = currentEvent.getTime();
             return chosenServer;
-        }*/
+        }
 
         //se è disponibile un server, il job viene immediatamente servito
         //ritorna l'indice del server per cui deve essere prodotto un tempo di completamento, altrimenti -1 se job va in coda
-        if (isSomeServerIdle()) {
+        /*if (isSomeServerIdle()) {
             int serverIndex = findIdleServer();
             Server selectedServer = servers.get(serverIndex);
             lastService = generateService(serverIndex);
@@ -62,14 +66,14 @@ public abstract class MsmqCenter extends Center {
             lastArrive[serverIndex] = currentEvent.getTime();
             //il controller produce un evento di completamento
             return serverIndex;
-        }
+        }*/
         //altrimenti il job viene inserito in una delle code secondo la politica di accodamento creata
         int selectedQueue = selectQueue();
-        queues[selectedQueue]++;
-        if (firstArrive[selectedQueue] == 0) {
-            firstArrive[selectedQueue] = currentEvent.getTime();
+        queues[chosenServer]++;
+        if (firstArrive[chosenServer] == 0) {
+            firstArrive[chosenServer] = currentEvent.getTime();
         }
-        lastArrive[selectedQueue] = currentEvent.getTime();
+        lastArrive[chosenServer] = currentEvent.getTime();
         return -1;
     }
 
@@ -92,6 +96,7 @@ public abstract class MsmqCenter extends Center {
         //se necessario disattivo il server, e sposto i suoi job in coda nella coda di un server attivo
         else if (numServerToRemove != 0) {
             currentEvent.getServer().active = false;
+            currentEvent.getServer().idle = true;
             numServerToRemove--;
             numActiveServer--;
             int i = 0;
@@ -102,6 +107,16 @@ public abstract class MsmqCenter extends Center {
             queues[i] += queues[currentEvent.getServer().id];
             queues[currentEvent.getServer().id] = 0;
             numBusyServers--;
+
+            /*if (numServerToRemove == 0) {
+                System.out.println("centro: " + name);
+                for (Server server: servers) {
+                    System.out.println("server " + server.id + " attivo: " + server.active + " idle: " + server.idle);
+                    System.out.println("job in coda: " + queues[server.id]);
+                }
+                System.out.println("server ancora da rimuovere: " + numServerToRemove);
+                System.out.println("");
+            }*/
         }
         //altrimenti il server torna a essere libero
         else {
@@ -155,6 +170,46 @@ public abstract class MsmqCenter extends Center {
         //share = percentuale di job processati da quel server sul totale
 
         System.out.println("");
+
+        System.out.println("Statistiche globali del centro multicoda: ");
+        aggregateStatistics();
+        System.out.println("  avg interarrivals .. =   " + f.format(findMax(lastArrive) / totalServed));
+        System.out.println("  avg wait ........... =   " + f.format(totalAreaNode / totalServed));
+        System.out.println("serviti: " + totalServed);
+        System.out.println("  avg # in node ...... =   " + f.format(totalAreaNode / findMax(lastDeparture)));
+        System.out.println("  avg delay .......... =   " + f.format(totalAreaQueue / totalServed));
+        System.out.println("  avg # in queue ..... =   " + f.format(totalAreaQueue / findMax(lastDeparture)));
+        System.out.println("   utilization ..... =   " + f.format(((totalService / findMax(lastDeparture))/numServer)));
+    }
+
+    public static double findMax(double[] array) {
+        if (array == null || array.length == 0) {
+            throw new IllegalArgumentException("L'array non può essere nullo o vuoto.");
+        }
+
+        double max = array[0];  // Inizializza `max` con il primo elemento dell'array
+        for (int i = 1; i < array.length; i++) {  // Scorri l'array partendo dal secondo elemento
+            if (array[i] > max) {  // Confronta ogni elemento con `max`
+                max = array[i];  // Aggiorna `max` se trovi un valore più grande
+            }
+        }
+
+        return max;  // Ritorna il valore massimo trovato
+    }
+
+    public static double findMin(double[] array) {
+        if (array == null || array.length == 0) {
+            throw new IllegalArgumentException("L'array non può essere nullo o vuoto.");
+        }
+
+        double min = array[0];  // Inizializza `min` con il primo elemento dell'array
+        for (int i = 1; i < array.length; i++) {  // Scorri l'array partendo dal secondo elemento
+            if (array[i] < min) {  // Confronta ogni elemento con `min`
+                min = array[i];  // Aggiorna `min` se trovi un valore più piccolo
+            }
+        }
+
+        return min;  // Ritorna il valore minimo trovato
     }
 
     //sceglie randomicamente una delle code (da definire meglio la politica di accodamento)
@@ -221,5 +276,48 @@ public abstract class MsmqCenter extends Center {
 
     public double getUtilization(int i) {
         return servers.get(i).service / (lastDeparture[i] - firstArrive[i]);
+    }
+
+    //i metodi sottostanti ritornano le statistiche globali dell'intero centro
+    //ossia aggrega le popolazioni (tempi di servizio e job serviti) che costituiscono le coppie coda-server del centro Msmq, e calcola le statistiche sempre utilizzando Little
+    public void aggregateStatistics() {
+        totalService = 0;
+        totalServed = 0;
+        totalAreaNode = 0;
+        totalAreaQueue = 0;
+        for (int i = 0; i < numServer; i++) {
+            if (servers.get(i).active) {
+                totalService += servers.get(i).service;
+                totalServed += servers.get(i).served;
+                totalAreaNode += area[i].node;
+                totalAreaQueue += area[i].queue;
+            }
+        }
+    }
+
+    public double getTotalAvgInterarrival() {
+        return (findMax(lastArrive) - findMin(firstArrive)) / totalServed;
+    }
+
+    public double getTotalAvgWait() {
+        return totalAreaNode / totalServed;
+    }
+
+    public double getTotalAvgDelay() {
+        return totalAreaQueue / totalServed;
+    }
+
+    public double getTotalAvgNode() {
+        return totalAreaNode / (findMax(lastDeparture) - findMin(firstArrive));
+    }
+
+    public double getTotalAvgQueue() {
+        return totalAreaQueue / (findMax(lastDeparture) -findMin(firstArrive));
+    }
+
+    //in realtà l'utilizzazione del centro multiserver coincide con l'utilizzazione del singolo servente
+    //per completezza inseriamo anche questo metodo
+    public double getTotalUtilization() {
+        return (totalService / (findMax(lastDeparture) - findMin(firstArrive)))/numActiveServer;
     }
 }

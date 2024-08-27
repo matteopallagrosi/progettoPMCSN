@@ -71,6 +71,19 @@ public abstract class MssqCenter extends Center {
             numServer--;
             numBusyServers--;
             numServerToRemove--;
+
+            /*if (numServerToRemove == 0) {
+                System.out.println("centro " + name);
+                System.out.println("jobs nel sistema: " + numJobs);
+                System.out.println("jobs in coda: " + (numJobs - numBusyServers));
+                System.out.println("numServer: " + numServer);
+                System.out.println("numBusyServer: " + numServer);
+                System.out.println("server ancora da rimuovere: " + numServerToRemove);
+                for (Server server: servers) {
+                    System.out.println("server " + server.id + " libero: " + server.idle);
+                }
+                System.out.println("");
+            }*/
         }
         //altrimenti il server torna a essere libero
         else {

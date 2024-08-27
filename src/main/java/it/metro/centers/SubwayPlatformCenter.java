@@ -35,10 +35,10 @@ public class SubwayPlatformCenter extends Center {
     public int processArrival() {
         lastArrive = currentEvent.getTime();
         numJobs += 1;
-        System.out.println("persone sulla banchina: " + numJobs);
+        //System.out.println("persone sulla banchina: " + numJobs);
         //se il numero di utenti ha superato la capacità massima della banchina, viene visualizzato un warning
         if (numJobs > capacity) {
-            System.out.println("Superata la capacità della banchina!");
+            //System.out.println("Superata la capacità della banchina!");
         }
         //non viene prodotto alcun evento di completamento
         return -1;
@@ -56,7 +56,7 @@ public class SubwayPlatformCenter extends Center {
             completedJobs += seats;
             numJobs -= seats;
         }
-        System.out.println("persone sulla banchina dopo arrivo del treno: " + numJobs);
+        //System.out.println("persone sulla banchina dopo arrivo del treno: " + numJobs);
         return 0;
     }
 

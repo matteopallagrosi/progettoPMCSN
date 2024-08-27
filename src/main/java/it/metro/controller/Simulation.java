@@ -31,6 +31,7 @@ public class Simulation {
     private int arrivalsElectronic = 0;
     private int arrivalsTicket = 0;
     private static double trainArrival = 0;
+    Statistics[][] matrix = new Statistics[6][54];
 
     //Run simulation
     public static void main(String[] args) {
@@ -79,11 +80,17 @@ public class Simulation {
     }
 
     //inizializza la lista degli eventi, mantenuta ordinata secondo il clock degli eventi
+    //quando viene estratto un nuovo evento con la poll, viene estratto sempre il prossimo evento in ordine temporale
+    //gli eventi di sampling hanno la precedenza rispetto agli eventi di cambio fascia (a parità di clock)
     private void initEvents() {
         events = new PriorityQueue<>(new Comparator<Event>() {
             @Override
             public int compare(Event e1, Event e2) {
-                return Double.compare(e1.getTime(), e2.getTime());
+                int timeComparison = Double.compare(e1.getTime(), e2.getTime());
+                if (timeComparison == 0) {
+                    return e1.getType().compareTo(e2.getType());
+                }
+                return timeComparison;
             }
         });
     }
@@ -130,7 +137,7 @@ public class Simulation {
                         for (int i = 0; i < (center.numJobs - oldNumServer); i++) {
                             //il job è mandato in servizio se presente ancora un server libero
                             if (center.numBusyServers < center.numServer) {
-                                Server idleServer = center.servers.get(oldNumServer + i);
+                                Server idleServer = center.servers.get(oldNumServer);
                                 assert idleServer.idle;
                                 //il server selezionato non è più idle
                                 idleServer.idle = false;
@@ -340,6 +347,7 @@ public class Simulation {
 
     //genera gli eventi di cambiamento di fascia oraria (che producono un cambiamento del tasso d'arrivo)
     //aggiunge questi eventi alla lista degli eventi
+    //NOTA: ogni evento di cambio fascia coincide sempre con un evento di campionamento (il viceversa non è vero)
     private void generateSlotChange() {
         //il clock di simulazione parte da 0 secondi (corrispondente all'orario 5.30)
         //2^a fascia oraria (7.30-10.30) ; 7.30 = 7200 s (trascorsi dalle 5.30)
@@ -354,6 +362,16 @@ public class Simulation {
         events.add(new Event(EventType.SLOTCHANGE, 46800));
         //7^a fascia oraria (20.30-23-30) ; 20.30 = 54000 s (trascorsi dalle 5.30)
         events.add(new Event(EventType.SLOTCHANGE, 54000));
+    }
+
+    //genera gli eventi di campionamento (con cui periodicamente avviene la raccolta delle statistiche)
+    //aggiunge questi eventi alla lista degli eventi ordinata
+    private void generateSamplingEvents() {
+        //vengono prodotti 54 eventi di campionamento (uno ogni 20 minuti)
+        for(int t = 1200; t <= 64800; t += 1200) {
+            Event event = new Event(EventType.SAMPLING, t);
+            events.add(event);
+        }
     }
 
     //Esegue una singola replica della simulazione
@@ -555,6 +573,10 @@ public class Simulation {
     //esegue una singola replica della simulazione a orizzonte finito, che simula tutte le fasce orarie
     //sulle 18 ore di operatività della metropolitana
     public void runFiniteHorizonSimulation(int[][] configCenters, double[] slotRates) {
+        int jobsProcessed = 0;                                  //jobs processati nel sampling corrente
+        int samplingIndex = 0;                                  //tiene traccia dello slot di sampling correntemente simulato
+        //matrice che tiene traccia delle statistiche medie per ogni centro (e anche overall del sistema) e per ogni slot di sampling
+
         //inizializza i centri con la configurazione della prima fascia oraria
         this.initCenters(configCenters[0]);
         this.initEvents();
@@ -566,6 +588,9 @@ public class Simulation {
 
         //produce gli eventi di cambiamento di fascia oraria
         generateSlotChange();
+
+        //produce gli eventi di campionamento
+        generateSamplingEvents();
 
         //configura il tasso di arrivo della prima fascia oraria
         setArrivalRate(slotRates[slotIndex]);
@@ -586,10 +611,8 @@ public class Simulation {
             Center currentCenter = event.getCenter();
 
             //aggiorna le statistiche del centro interessato dall'evento (e aggiorna l'evento corrente)
-            //currentCenter.updateStatistics(event);
-
-            if (event.getType() != EventType.SLOTCHANGE) {
-                currentCenter.currentEvent = event;
+            if (event.getType() != EventType.SLOTCHANGE && (event.getType() != EventType.SAMPLING)) {
+                currentCenter.updateStatistics(event);
             }
 
             //aggiorna il clock di simulazione
@@ -597,6 +620,13 @@ public class Simulation {
 
             //processa l'evento di arrivo
             if (event.getType() == EventType.ARRIVAL) {
+                //tiene traccia del numero di arrivi totale presso la banchina
+                //questo è necessario per sapere i job completati in uno slot di campionamento, così da poter produrre le statistiche per l'intero sistema
+                //all'evento di sampling questa variabile viene azzerata
+                if (currentCenter == subwayPlatformCenter) {
+                    jobsProcessed++;
+                }
+
                 int serverDeparture = currentCenter.processArrival();
 
                 //produce l'arrivo successivo dall'esterno solo quando viene processato un arrivo "nuovo" (ossia dall'esterno, non conseguente a un completamento)
@@ -643,21 +673,66 @@ public class Simulation {
                 //configura il tasso di arrivo della nuova fascia oraria
                 setArrivalRate(slotRates[slotIndex]);
 
+                //stampa lo stato dei centri prima del cambio configurazione
+                /*System.out.println("prima del cambiamento");
+                for (Center center : centers) {
+                    printCenterState(center);
+                }*/
+
                 //modifica i centri con la configurazione per la nuova fascia oraria
                 changeConfigurationCenters(configCenters[slotIndex]);
                 slotIndex++;
 
+                //stampa lo stato dei centri dopo il cambio di configurazione
+                /*System.out.println("dopo il cambiamento");
+                for (Center center : centers) {
+                    printCenterState(center);
+                }*/
+            }
+            else if (event.getType() == EventType.SAMPLING) {
+                //calcole le statistiche medie per ogni centro per questo slot di sampling
+                generateSamplingStatistics(samplingIndex, jobsProcessed);
+                //azzera le statistiche di ogni centro
+                resetStatistics();
+                //passa allo slot di sampling successivo
+                samplingIndex++;
+                jobsProcessed = 0;
             }
         }
-        System.out.println("turstiles: " + arrivalsTurtsiles);
-        System.out.println("electronic " + arrivalsElectronic);
-        System.out.println("ticket: " + arrivalsTicket);
-        //stampa le statistiche di ogni centro
-        //printCentersStatistics();
+    }
 
-        //stampa le statistiche dell'intero sistema
-        //printSystemStatistics();
-
+    //stampa lo stato corrente del centro
+    private void printCenterState(Center center) {
+        System.out.println(center.name);
+        if (center instanceof MssqCenter) {
+            System.out.println("jobs nel sistema: " + center.numJobs);
+            System.out.println("jobs in coda: " + (center.numJobs - center.numBusyServers));
+            System.out.println("numServer: " + center.numServer);
+            System.out.println("numBusyServer: " + center.numBusyServers);
+            System.out.println("server ancora da rimuovere: " + center.numServerToRemove);
+            for (Server server: center.servers) {
+                System.out.println("server " + server.id + " libero: " + server.idle);
+            }
+            System.out.println("");
+        }
+        else if (center instanceof MslsCenter) {
+            System.out.println("jobs nel sistema: " + center.numJobs);
+            System.out.println("numServer: " + center.numServer);
+            System.out.println("numBusyServer: " + center.numBusyServers);
+            for (Server server: center.servers) {
+                System.out.println("server " + server.id + " libero: " + server.idle);
+            }
+            System.out.println("server ancora da rimuovere: " + center.numServerToRemove);
+            System.out.println("");
+        }
+        else if (center instanceof MsmqCenter) {
+            for (Server server: center.servers) {
+                System.out.println("server " + server.id + " attivo: " + server.active + " idle: " + server.idle);
+                System.out.println("job in coda: " + ((MsmqCenter) center).queues[server.id]);
+            }
+            System.out.println("server ancora da rimuovere: " + center.numServerToRemove);
+            System.out.println("");
+        }
     }
 
 
@@ -829,6 +904,44 @@ public class Simulation {
         matrix[5][batchIndex] = overallStatistics;
     }
 
+
+    //genera una matrice che contiene per ogni riga i le statistiche del centro i-esimo in ogni slot di campionamento (= colonna), in un oggetto Statistics, per la replica di simulazione corrente
+    private void generateSamplingStatistics(int samplingIndex, int processedJobs) {
+        for (Center center : centers) {
+            Statistics centerStat = new Statistics(1);
+            //le statistiche sono settate in modo diverso a seconda del tipo di centro
+            //MssqCenter utilizza solo lo slot 0 per le statistiche
+            if ((center instanceof MssqCenter) || (center instanceof MslsCenter)) {
+                centerStat.avgInterarrivals[0] = center.getAvgInterarrival(0);
+                centerStat.avgWait[0] = center.getAvgWait(0);
+                centerStat.avgDelay[0] = center.getAvgDelay(0);
+                centerStat.avgNode[0] = center.getAvgNode(0);
+                centerStat.avgQueue[0] = center.getAvgQueue(0);
+                centerStat.utilization[0] = center.getUtilization(0);
+            }
+            //statistiche aggregare per il centro Msmq
+            else if (center instanceof MsmqCenter) {
+                ((MsmqCenter) center).aggregateStatistics();
+                centerStat.avgInterarrivals[0] = ((MsmqCenter) center).getTotalAvgInterarrival();
+                centerStat.avgWait[0] = ((MsmqCenter) center).getTotalAvgWait();
+                centerStat.avgDelay[0] = ((MsmqCenter) center).getTotalAvgDelay();
+                centerStat.avgNode[0] = ((MsmqCenter) center).getTotalAvgNode();
+                centerStat.avgQueue[0] = ((MsmqCenter) center).getTotalAvgQueue();
+                centerStat.utilization[0] = ((MsmqCenter) center).getTotalUtilization();
+            }
+            if (center != subwayPlatformCenter) {
+                matrix[center.ID - 1][samplingIndex] = centerStat;
+            }
+        }
+        //l'ultima riga della matrice tiene traccia del tempo di risposta media e popolazione media dell'intero sistema in quello slot di sampling
+        Statistics overallStatistics = new Statistics(1);
+        double areaSystem = getAreaSystem();
+        overallStatistics.avgWait[0] = areaSystem / processedJobs;
+        //gli slot di sampling hanno una durata fissa di 1200 s
+        overallStatistics.avgNode[0] = areaSystem / (1200);
+        matrix[5][samplingIndex] = overallStatistics;
+    }
+
     //azzera le statistiche di ogni centro
     private void resetStatistics() {
         for (Center center : centers) {
@@ -903,9 +1016,7 @@ public class Simulation {
                 areaSystem += center.area[0].node;
             }
             else if (center instanceof MsmqCenter) {
-                for (int i= 0; i < center.numServer; i++) {
-                    areaSystem += center.area[i].node;
-                }
+                    areaSystem += ((MsmqCenter) center).totalAreaNode;
             }
             //in questo caso ricade solo SubwayPlatformCenter
             else {

@@ -71,6 +71,18 @@ public abstract class MslsCenter extends Center {
             servers.remove(currentEvent.getServer());
             numServer--;
             numServerToRemove--;
+
+            /*if (numServerToRemove == 0) {
+                System.out.println("centro: " + name);
+                System.out.println("jobs nel sistema: " + numJobs);
+                System.out.println("numServer: " + numServer);
+                System.out.println("numBusyServer: " + numServer);
+                for (Server server: servers) {
+                    System.out.println("server " + server.id + " libero: " + server.idle);
+                }
+                System.out.println("server ancora da rimuovere: " + numServerToRemove);
+                System.out.println("");
+            }*/
         }
         return -1;
     }
