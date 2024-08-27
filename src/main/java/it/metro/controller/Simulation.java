@@ -12,7 +12,7 @@ import java.util.*;
 public class Simulation {
 
     private Queue<Event> events;                            //lista che tiene traccia degli eventi generati durante la simulazione
-    private static double arrival = 0;
+    private double arrival = 0;
     private double STOP    = 2000000.0;                       //"close the door" --> il flusso di arrivo viene interrotto
     public boolean closeTheDoor = false;
     private double arrivalRate = 0;
@@ -73,6 +73,7 @@ public class Simulation {
     public void initSeed(Rngs r, Rvgs v) {
         this.r = r;
         this.v = v;
+        this.v.rngs = r;
     }
 
     public void setStop(double stopTime) {
@@ -261,11 +262,15 @@ public class Simulation {
                     int numServerToActive = newConfig[center.ID-1] - ((MsmqCenter) center).numActiveServer;
                     int i = 0;
                     while (numServerToActive != 0) {
-                        if (!center.servers.get(i).active) {
-                            center.servers.get(i).active = true;
-                            numServerToActive--;
+                        try {
+                            if (!center.servers.get(i).active) {
+                                center.servers.get(i).active = true;
+                                numServerToActive--;
+                            }
+                            i++;
+                        } catch(IndexOutOfBoundsException e) {
+                            e.printStackTrace();
                         }
-                        i++;
                     }
                     ((MsmqCenter) center).numActiveServer = newConfig[center.ID-1];
                 }

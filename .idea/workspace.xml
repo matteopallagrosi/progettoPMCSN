@@ -4,15 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Terminata simulazione a orizzonte finito (da realizzare calcolo delle statistiche)">
+    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Terminata calcolo statistiche simulazione orrizzonte finito (da terminare esecuzione più repliche)">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MslsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MslsCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MssqCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MssqCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/FiniteHorizonSImulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/FiniteHorizonSImulation.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/events/EventType.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/events/EventType.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -53,7 +49,7 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.FiniteHorizonSImulation.executor": "Debug",
+    "Application.FiniteHorizonSImulation.executor": "Run",
     "Application.InfiniteHorizonSimulation.executor": "Run",
     "Application.Simulation.executor": "Run",
     "RunOnceActivity.OpenProjectViewOnStart": "true",
@@ -172,7 +168,7 @@
       <workItem from="1724419308058" duration="6523000" />
       <workItem from="1724508186308" duration="5816000" />
       <workItem from="1724680879500" duration="10828000" />
-      <workItem from="1724747669426" duration="17163000" />
+      <workItem from="1724747669426" duration="21524000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -294,7 +290,15 @@
       <option name="project" value="LOCAL" />
       <updated>1724433151812</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="Terminata calcolo statistiche simulazione orrizzonte finito (da terminare esecuzione più repliche)">
+      <option name="closed" value="true" />
+      <created>1724777150820</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1724777150820</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -328,15 +332,26 @@
     <MESSAGE value="Aggiunta simulazione a orizzonte infinito con batch means" />
     <MESSAGE value="Terminata simulazione a orizzonte infinito con batch means" />
     <MESSAGE value="Terminata simulazione a orizzonte finito (da realizzare calcolo delle statistiche)" />
-    <option name="LAST_COMMIT_MESSAGE" value="Terminata simulazione a orizzonte finito (da realizzare calcolo delle statistiche)" />
+    <MESSAGE value="Terminata calcolo statistiche simulazione orrizzonte finito (da terminare esecuzione più repliche)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Terminata calcolo statistiche simulazione orrizzonte finito (da terminare esecuzione più repliche)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
           <url>file://$PROJECT_DIR$/src/main/java/it/metro/controller/FiniteHorizonSImulation.java</url>
-          <line>45</line>
-          <option name="timeStamp" value="21" />
+          <line>43</line>
+          <option name="timeStamp" value="31" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java</url>
+          <line>678</line>
+          <option name="timeStamp" value="35" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java</url>
+          <line>258</line>
+          <option name="timeStamp" value="36" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

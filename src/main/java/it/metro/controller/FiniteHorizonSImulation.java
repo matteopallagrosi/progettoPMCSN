@@ -41,7 +41,6 @@ public class FiniteHorizonSImulation {
             //L'arrivo degli utenti viene interrotto dopo 18 ore = 648000 (alle 23.30 orario di chiusura della metro, aperta alle 5.30)
             simulation.setStop(64800);
             simulation.runFiniteHorizonSimulation(configCenters, slotRates);
-            //TODO devo costruire un array di matrici dentro a simulation
             simulations[i] = simulation;
         }
         System.out.println("FINITO!");
