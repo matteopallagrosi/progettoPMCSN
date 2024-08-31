@@ -9,7 +9,7 @@ import java.text.DecimalFormat;
 //rappresenta il centro della banchina della metro (singola coda, singolo server)
 public class SubwayPlatformCenter extends Center {
     public double lastArrive;                      //ultimo arrivo presso questo centro
-    final int capacity = 500;                     //rappresenta la capacità della banchina
+    final int capacity = 880;                      //rappresenta la capacità della banchina
     public double lastDeparture;
     final int seats = 300;                         //numero di posti disponibili sul treno
 
@@ -37,8 +37,10 @@ public class SubwayPlatformCenter extends Center {
         numJobs += 1;
         //System.out.println("persone sulla banchina: " + numJobs);
         //se il numero di utenti ha superato la capacità massima della banchina, viene visualizzato un warning
+        //la simulazione viene quindi interrotta
         if (numJobs > capacity) {
-            //System.out.println("Superata la capacità della banchina!");
+            System.out.println("Superata la capacità della banchina!");
+            System.exit(0);
         }
         //non viene prodotto alcun evento di completamento
         return -1;

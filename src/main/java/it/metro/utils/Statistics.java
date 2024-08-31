@@ -2,12 +2,14 @@ package it.metro.utils;
 
 public class Statistics {
 
-    public double[] avgInterarrivals;         //tempo medio di interarrivo al centro (lambda)
+    public double[] avgInterarrivals;         //tempo medio di interarrivo al centro (1/lambda) (nel caso di Msls rappresenta 1/lamba accepted)
     public double[] avgWait;                  //tempo medio di risposta
     public double[] avgDelay;                 //tempo medio di attesa in coda
     public double[] avgNode;                  //popolazione media nel centro
     public double[] avgQueue;                 //popolazione media in coda
-    public double[] utilization;            //utilizzazione di ciascuno dei server (tutti i server hanno pari utilizzazione data la politica di assegnamento dei job)
+    public double[] utilization;              //utilizzazione di ciascuno dei server (tutti i server hanno pari utilizzazione data la politica di assegnamento dei job)
+    public double lossProbability;            //nel caso dei centri con perdita (come Msls) rappresenta la probabilità che un job trovi il centro occupato e venga quindi rifiutato
+    public double totalInterrarival;          //nel caso del loss system rappresenta il tempo medio di interarrivo al centro, prima che i job vengano scartati
 
     public Statistics(int numServer) {
         avgInterarrivals = new double[numServer];

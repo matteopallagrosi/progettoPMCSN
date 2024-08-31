@@ -14,11 +14,19 @@ public class TicketInspectorsCenter extends MslsCenter {
         //probabilità con cui nextCenter è Elevator oppure Platform
         v.rngs.selectStream(60);
         double random = v.rngs.random();
+        //utente potrebbe non aver passato i controlli
         if (random <= 0.1) {
-            return 5;                        //pE --> utente che si dirige verso gli ascensori
+            return 0;                        //pO --> utente che esce dal sistema poiché non ha superato i controlli
         }
+        //se supera i controlli
         else {
-            return 6;                        //1-pE --> utente che si dirige verso la banchina del treno
+            v.rngs.selectStream(61);
+            random = v.rngs.random();
+            if (random <= 0.1) {
+                return 5;                        //pE --> utente che si dirige verso gli ascensori
+            } else {
+                return 6;                        //1-pE --> utente che si dirige verso la banchina del treno
+            }
         }
     }
 

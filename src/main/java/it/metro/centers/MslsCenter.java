@@ -152,4 +152,12 @@ public abstract class MslsCenter extends Center {
         return servers.get(i).service / (lastDeparture - firstArrive);
     }
 
+    public double getLossProbability() {
+        return rejectedJob/arrivalJobs;
+    }
+
+    public double getTotalInterrarival() {
+        return (lastArrive - firstArrive)/ arrivalJobs;
+    }
+
 }

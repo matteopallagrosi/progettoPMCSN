@@ -3,15 +3,13 @@ package it.metro.controller;
 import it.metro.utils.Rngs;
 import it.metro.utils.Rvgs;
 
-import java.util.Arrays;
-
-public class FiniteHorizonSImulation {
+public class FiniteHorizonSimulation {
 
     private final int NUM_REPLICATIONS = 128;
     Simulation[] simulations = new Simulation[NUM_REPLICATIONS];
 
     public static void main(String[] args) {
-        FiniteHorizonSImulation finiteHorizonSImulation = new FiniteHorizonSImulation();
+        FiniteHorizonSimulation finiteHorizonSImulation = new FiniteHorizonSimulation();
         finiteHorizonSImulation.run();
     }
 

@@ -212,15 +212,36 @@ public abstract class MsmqCenter extends Center {
         return min;  // Ritorna il valore minimo trovato
     }
 
-    //sceglie randomicamente una delle code (da definire meglio la politica di accodamento)
+    // Ritorna l'indice della coda (di un server attivo) con il numero minimo di utenti accodati.
+    // Se diverse code presentano lo stesso numero minimo di utenti, sceglie uniformemente una tra di esse.
     private int selectQueue() {
-        v.rngs.selectStream(4);
+        //sceglie randomicamente una delle code (per motivi di testing)
+        /*v.rngs.selectStream(4);
         //ritorna casualmente una coda tra quella dei server attivi (da modificare)
         int selectedQueue =  (int)v.equilikely(0, numServer-1);
         while (!servers.get(selectedQueue).active) {
             selectedQueue = (int)v.equilikely(0, numServer-1);
         }
-        return selectedQueue;
+        return selectedQueue;*/
+        int minValue = queues[0];
+        List<Integer> minIndices = new ArrayList<>();
+
+        // Trova il valore minimo e raccoglie gli indici delle sue posizione nell'array
+        for (int i = 0; i < queues.length; i++) {
+            if (queues[i] < minValue && servers.get(i).active) {
+                minValue = queues[i];
+                minIndices.clear(); // Reset della lista degli indici
+                minIndices.add(i); // Aggiungi il nuovo indice del minimo
+            } else if (queues[i] == minValue && servers.get(i).active) {
+                minIndices.add(i); // Aggiungi l'indice del minimo esistente
+            }
+        }
+
+        // Seleziona uniformemente un indice tra quelli raccolti
+        v.rngs.selectStream(4);
+        int selectedIndex =  (int)v.equilikely(0, minIndices.size()-1);
+
+        return minIndices.get(selectedIndex);
     }
 
     //verifica se è presente un server libero

@@ -923,6 +923,10 @@ public class Simulation {
                 centerStat.avgNode[0] = center.getAvgNode(0);
                 centerStat.avgQueue[0] = center.getAvgQueue(0);
                 centerStat.utilization[0] = center.getUtilization(0);
+                if (center instanceof MslsCenter) {
+                    centerStat.lossProbability = ((MslsCenter) center).getLossProbability();
+                    centerStat.totalInterrarival = ((MslsCenter) center).getTotalInterrarival();
+                }
             }
             //statistiche aggregare per il centro Msmq
             else if (center instanceof MsmqCenter) {
