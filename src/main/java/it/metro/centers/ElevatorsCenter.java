@@ -17,6 +17,9 @@ public class ElevatorsCenter extends MssqCenter {
     @Override
     public double getService() {
         v.rngs.selectStream(70);
-        return v.exponential(2);
+        //return v.exponential(2);
+        double alfa = rvms.cdfNormal(20,1,0);
+        double u = v.uniform(alfa, 1);
+        return rvms.idfNormal(20,1, u);
     }
 }

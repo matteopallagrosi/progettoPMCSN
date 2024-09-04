@@ -18,6 +18,9 @@ public class TicketCenter extends MssqCenter {
     public double getService() {
         v.rngs.selectStream(100);
         //return (v.uniform(2.0, 10.0));
-        return v.exponential(3.33);
+        //return v.exponential(3.33);
+        double alfa = rvms.cdfExponential(40, 5);
+        double u = v.uniform(alfa, 1);
+        return rvms.idfExponential(40, u);
     }
 }

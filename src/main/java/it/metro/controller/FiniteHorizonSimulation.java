@@ -28,7 +28,7 @@ public class FiniteHorizonSimulation {
         //int[][] configCenters = new int[][] {{4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}};
 
         //tassi di arrivo di ognuna delle fasce orarie
-        double[] slotRates = new double[] {0.166, 0.166, 0.166, 0.166, 0.166, 0.166, 0.166};
+        double[] slotRates = new double[] {0.045, 0.303, 0.076, 0.606, 0.05, 0.273, 0.076};
 
         //esegue NUM_REPLICATIONS repliche, ciascuna delle quali simula le 18 ore di operatività della metropolitana
         for (int i = 0; i < NUM_REPLICATIONS; i++) {

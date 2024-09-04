@@ -18,6 +18,9 @@ public class ElectronicTicketCenter extends MssqCenter {
     public double getService() {
         v.rngs.selectStream(1);
         //return (v.uniform(2.0, 10.0));
-        return v.exponential(0.5);
+        //return v.exponential(0.5);
+        double alfa = rvms.cdfExponential(90, 20);
+        double u = v.uniform(alfa, 1);
+        return rvms.idfExponential(90, u);
     }
 }

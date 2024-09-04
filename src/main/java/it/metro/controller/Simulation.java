@@ -32,11 +32,12 @@ public class Simulation {
     private int arrivalsTicket = 0;
     private static double trainArrival = 0;
     Statistics[][] matrix = new Statistics[6][54];
+    Rvms rvms;
 
     //Run simulation
     public static void main(String[] args) {
         Simulation simulation = new Simulation();
-        simulation.setArrivalRate(0.166);
+        simulation.setArrivalRate(1/0.166);
         simulation.run();
     }
 
@@ -68,6 +69,7 @@ public class Simulation {
         r = new Rngs();                  //istanzia la libreria per la generazione dei valori randomici
         r.plantSeeds(123456789);      //inizializza seed da cui produce i seed dei diversi stream
         v = new Rvgs(r);                 //istanzia la libreria per la generazione delle variate aleatorie
+        rvms = new Rvms();
     }
 
     public void initSeed(Rngs r, Rvgs v) {
@@ -299,7 +301,7 @@ public class Simulation {
     //genera il prossimo istante di arrivo (arrivi random = tempo di interarr. esp.)
     private double getArrival() {
         r.selectStream(0);
-        arrival += v.exponential(arrivalRate);
+        arrival += v.exponential(1/arrivalRate);
         return (arrival);
     }
 
@@ -338,7 +340,10 @@ public class Simulation {
 
     private void generateTrainArrivalEvent() {
         r.selectStream(80);
-        trainArrival += v.exponential(10);
+        double alfa = rvms.cdfNormal(240,30, 120);
+        double beta = 1-rvms.cdfNormal(240,30, 360);
+        double u = v.uniform(alfa,1-beta);
+        trainArrival += rvms.idfNormal(240, 30, u);
         Event tArrival = new Event(EventType.TRAINARRIVAL, trainArrival);
         tArrival.setCenter(subwayPlatformCenter);
         //se il flusso di arrivi è bloccato e non ci sono più passeggeri nella banchina, si interrompe il passaggio dei treni
@@ -346,7 +351,7 @@ public class Simulation {
             return;
         }
         else {
-        events.add(tArrival);
+            events.add(tArrival);
         }
     }
 
@@ -363,10 +368,10 @@ public class Simulation {
         events.add(new Event(EventType.SLOTCHANGE, 32400));
         //5^a fascia oraria (15.30-18-30) ; 15.30 = 36000 s (trascorsi dalle 5.30)
         events.add(new Event(EventType.SLOTCHANGE, 36000));
-        //6^a fascia oraria (18.30-20-30) ; 18.30 = 46800 s (trascorsi dalle 5.30)
+        //6^a fascia oraria (18.30-21-30) ; 18.30 = 46800 s (trascorsi dalle 5.30)
         events.add(new Event(EventType.SLOTCHANGE, 46800));
-        //7^a fascia oraria (20.30-23-30) ; 20.30 = 54000 s (trascorsi dalle 5.30)
-        events.add(new Event(EventType.SLOTCHANGE, 54000));
+        //7^a fascia oraria (21.30-23-30) ; 21.30 = 57600 s (trascorsi dalle 5.30)
+        events.add(new Event(EventType.SLOTCHANGE, 57600));
     }
 
     //genera gli eventi di campionamento (con cui periodicamente avviene la raccolta delle statistiche)
@@ -427,8 +432,9 @@ public class Simulation {
                 if (serverDeparture != -1) {
                     events.add(generateDepartureEvent(currentCenter, currentCenter.servers.get(serverDeparture)));
                 }
-                //se il job non è stato mandato in servizio, e il centro corrente è quello dei controllori, il job deve raggiungere direttamente il centro successivo
+                //se il job non è stato mandato in servizio (controllo non effettuato), e il centro corrente è quello dei controllori, il job deve raggiungere direttamente il centro successivo
                 else if (currentCenter == ticketInspectorsCenter) {
+                    ticketInspectorsCenter.lastInspectionDone = false;
                     generateArrivalNextCenter(event);
                 }
             }
@@ -438,6 +444,10 @@ public class Simulation {
                 //se il completamento corrente ha portato in servizio il job successivo, produce un nuovo evento di completamento
                 if (generateDeparture != -1) {
                     events.add(generateDepartureEvent(currentCenter, event.getServer()));
+                }
+
+                if (currentCenter == ticketInspectorsCenter) {
+                    ticketInspectorsCenter.lastInspectionDone = true;
                 }
 
                 //genera l'evento di arrivo presso il centro successivo conseguente al completamento presso il centro corrente
@@ -527,8 +537,9 @@ public class Simulation {
                 if (serverDeparture != -1) {
                     events.add(generateDepartureEvent(currentCenter, currentCenter.servers.get(serverDeparture)));
                 }
-                //se il job non è stato mandato in servizio, e il centro corrente è quello dei controllori, il job deve raggiungere direttamente il centro successivo
+                //se il job non è stato mandato in servizio (controllo non effettuato), e il centro corrente è quello dei controllori, il job deve raggiungere direttamente il centro successivo
                 else if (currentCenter == ticketInspectorsCenter) {
+                    ticketInspectorsCenter.lastInspectionDone = false;
                     generateArrivalNextCenter(event);
                 }
             }
@@ -538,6 +549,10 @@ public class Simulation {
                 //se il completamento corrente ha portato in servizio il job successivo, produce un nuovo evento di completamento
                 if (generateDeparture != -1) {
                     events.add(generateDepartureEvent(currentCenter, event.getServer()));
+                }
+
+                if (currentCenter == ticketInspectorsCenter) {
+                    ticketInspectorsCenter.lastInspectionDone = true;
                 }
 
                 //genera l'evento di arrivo presso il centro successivo conseguente al completamento presso il centro corrente
@@ -649,8 +664,9 @@ public class Simulation {
                 if (serverDeparture != -1) {
                     events.add(generateDepartureEvent(currentCenter, currentCenter.servers.get(serverDeparture)));
                 }
-                //se il job non è stato mandato in servizio, e il centro corrente è quello dei controllori, il job deve raggiungere direttamente il centro successivo
+                //se il job non è stato mandato in servizio (controllo non effettuato), e il centro corrente è quello dei controllori, il job deve raggiungere direttamente il centro successivo
                 else if (currentCenter == ticketInspectorsCenter) {
+                    ticketInspectorsCenter.lastInspectionDone = false;
                     generateArrivalNextCenter(event);
                 }
             }
@@ -660,6 +676,10 @@ public class Simulation {
                 //se il completamento corrente ha portato in servizio il job successivo, produce un nuovo evento di completamento
                 if (generateDeparture != -1) {
                     events.add(generateDepartureEvent(currentCenter, event.getServer()));
+                }
+
+                if (currentCenter == ticketInspectorsCenter) {
+                    ticketInspectorsCenter.lastInspectionDone = true;
                 }
 
                 //genera l'evento di arrivo presso il centro successivo conseguente al completamento presso il centro corrente

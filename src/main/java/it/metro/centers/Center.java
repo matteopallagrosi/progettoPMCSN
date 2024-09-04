@@ -1,10 +1,7 @@
 package it.metro.centers;
 
 import it.metro.events.Event;
-import it.metro.utils.Area;
-import it.metro.utils.Rvgs;
-import it.metro.utils.Server;
-import it.metro.utils.Time;
+import it.metro.utils.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +20,7 @@ public abstract class Center {
     public List<Server> servers;            //lista di server del centro
     public int numBusyServers = 0;      //numero di server occupati del centro
     public int numServerToRemove = 0;   //quando questa variabile è != 0, il server presso cui un job è stato appena completato verrà rimosso
+    Rvms rvms;
 
 
     public Center(int id, int numServer, Rvgs v, String name) {
@@ -35,6 +33,7 @@ public abstract class Center {
             Server newServer = new Server(i);
             servers.add(newServer);
         }
+        rvms = new Rvms();
     }
 
     //ritorna il centro successivo (il raggiungimento del centro successivo può essere probabilistico)

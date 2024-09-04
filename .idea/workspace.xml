@@ -4,15 +4,18 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Terminata calcolo statistiche simulazione orrizzonte finito">
+    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Aggiornata politica di accodamento nel centro tornelli.">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MslsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MslsCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MsmqCenter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/Center.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/Center.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElectronicTicketCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElectronicTicketCenter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElevatorsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/ElevatorsCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketInspectorsCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TicketInspectorsCenter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/FiniteHorizonSImulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/FiniteHorizonSimulation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/TurnstilesCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/TurnstilesCenter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/FiniteHorizonSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/FiniteHorizonSimulation.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/InfiniteHorizonSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/InfiniteHorizonSimulation.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/utils/Statistics.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/utils/Statistics.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -81,7 +84,7 @@
       <recent name="$PROJECT_DIR$/src/main/java/it/metro/utils" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.FiniteHorizonSimulation">
+  <component name="RunManager" selected="Application.Simulation">
     <configuration name="FiniteHorizonSimulation" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="it.metro.controller.FiniteHorizonSimulation" />
       <module name="progettoPMCSN" />
@@ -123,8 +126,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.FiniteHorizonSimulation" />
         <item itemvalue="Application.Simulation" />
+        <item itemvalue="Application.FiniteHorizonSimulation" />
         <item itemvalue="Application.InfiniteHorizonSimulation" />
       </list>
     </recent_temporary>
@@ -176,7 +179,9 @@
       <workItem from="1724747669426" duration="21734000" />
       <workItem from="1724854533411" duration="3791000" />
       <workItem from="1725025189495" duration="4973000" />
-      <workItem from="1725117088105" duration="4911000" />
+      <workItem from="1725117088105" duration="5010000" />
+      <workItem from="1725268765121" duration="10634000" />
+      <workItem from="1725441877123" duration="8920000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -314,7 +319,15 @@
       <option name="project" value="LOCAL" />
       <updated>1724781722130</updated>
     </task>
-    <option name="localTasksCounter" value="18" />
+    <task id="LOCAL-00018" summary="Aggiornata politica di accodamento nel centro tornelli.">
+      <option name="closed" value="true" />
+      <created>1725124657507</created>
+      <option name="number" value="00018" />
+      <option name="presentableId" value="LOCAL-00018" />
+      <option name="project" value="LOCAL" />
+      <updated>1725124657507</updated>
+    </task>
+    <option name="localTasksCounter" value="19" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -350,7 +363,8 @@
     <MESSAGE value="Terminata simulazione a orizzonte finito (da realizzare calcolo delle statistiche)" />
     <MESSAGE value="Terminata calcolo statistiche simulazione orrizzonte finito (da terminare esecuzione più repliche)" />
     <MESSAGE value="Terminata calcolo statistiche simulazione orrizzonte finito" />
-    <option name="LAST_COMMIT_MESSAGE" value="Terminata calcolo statistiche simulazione orrizzonte finito" />
+    <MESSAGE value="Aggiornata politica di accodamento nel centro tornelli." />
+    <option name="LAST_COMMIT_MESSAGE" value="Aggiornata politica di accodamento nel centro tornelli." />
   </component>
   <component name="XDebuggerManager">
     <watches-manager>

@@ -11,7 +11,7 @@ public class SubwayPlatformCenter extends Center {
     public double lastArrive;                      //ultimo arrivo presso questo centro
     final int capacity = 880;                      //rappresenta la capacità della banchina
     public double lastDeparture;
-    final int seats = 300;                         //numero di posti disponibili sul treno
+    final int seats = 1200;                        //numero di posti totali sul treno
 
     public SubwayPlatformCenter(int numServer, Rvgs v) {
         super(6, numServer, v, "Subway Platform Center");
@@ -50,13 +50,16 @@ public class SubwayPlatformCenter extends Center {
     @Override
     public int processDeparture() {
         lastDeparture = currentEvent.getTime();
-        if (numJobs <= seats) {
+        v.rngs.selectStream(64);
+        int busySeats = (int) v.poisson(400);
+        int freeSeats = seats - busySeats;
+        if (numJobs <= freeSeats) {
             completedJobs += numJobs;
             numJobs = 0;
         }
         else {
-            completedJobs += seats;
-            numJobs -= seats;
+            completedJobs += freeSeats;
+            numJobs -= freeSeats;
         }
         //System.out.println("persone sulla banchina dopo arrivo del treno: " + numJobs);
         return 0;
