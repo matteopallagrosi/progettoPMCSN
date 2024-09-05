@@ -20,7 +20,7 @@ public class TicketCenter extends MssqCenter {
         //return (v.uniform(2.0, 10.0));
         //return v.exponential(3.33);
         double alfa = rvms.cdfExponential(40, 5);
-        double u = v.uniform(alfa, 1);
+        double u = v.uniform(0, 1);
         return rvms.idfExponential(40, u);
     }
 }

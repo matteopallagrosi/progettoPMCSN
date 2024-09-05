@@ -21,7 +21,7 @@ import java.util.StringTokenizer;
 
 public class Estimate {
     
-    static final double LOC = 0.95;    /* level of confidence,        */ 
+    static final double LOC = 0.95;    /* level of confidence,        */
                                        /* use 0.95 for 95% confidence */
 
     public static void estimate(double[] sample) {
@@ -47,7 +47,7 @@ public class Estimate {
 
 		stdev  = Math.sqrt(sum / n);
 	
-		DecimalFormat df = new DecimalFormat("###0.000");
+		DecimalFormat df = new DecimalFormat("###0.000000");
 	
 		if (n > 1) {
 		    u = 1.0 - 0.5 * (1.0 - LOC);              /* interval parameter  */

@@ -20,7 +20,7 @@ public class ElectronicTicketCenter extends MssqCenter {
         //return (v.uniform(2.0, 10.0));
         //return v.exponential(0.5);
         double alfa = rvms.cdfExponential(90, 20);
-        double u = v.uniform(alfa, 1);
+        double u = v.uniform(0, 1);
         return rvms.idfExponential(90, u);
     }
 }

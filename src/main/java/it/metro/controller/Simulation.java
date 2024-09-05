@@ -37,7 +37,7 @@ public class Simulation {
     //Run simulation
     public static void main(String[] args) {
         Simulation simulation = new Simulation();
-        simulation.setArrivalRate(1/0.166);
+        simulation.setArrivalRate(0.05);
         simulation.run();
     }
 
@@ -50,7 +50,7 @@ public class Simulation {
         centers[1] = ticketCenter;
         //il centro dei tornelli viene creato con il massimo numero di tornelli possibile
         //in ogni fascia oraria sarà attivo un numero di tornelli (<=maxNumTurnstiles) pari alla configurazione desiderata
-        turnstilesCenter = new TurnstilesCenter(maxNumTurnstiles, v);
+        turnstilesCenter = new TurnstilesCenter(2, v);
         //di default i tornelli sono tutti attivi, disattivo quelli in eccesso secondo la configurazione della prima fascia oraria
         for (int i = 0; i < (maxNumTurnstiles - config[2]); i++) {
             turnstilesCenter.servers.get(i).active = false;
@@ -387,7 +387,7 @@ public class Simulation {
     //Esegue una singola replica della simulazione
     private void run() {
         this.initGenerators();
-        this.initCenters(new int[]{4,4,4,4,4});
+        this.initCenters(new int[]{4,1,2,2,4});
         this.initEvents();
 
         //inizializza il clock di simulazione
@@ -478,7 +478,7 @@ public class Simulation {
         int batchIndex = 0;                                                                      //tiene traccia del batch correntemente simulato
         Statistics[][] matrix = new Statistics[6][numBatches];      //matrice che tiene traccia delle statistiche medie per ogni centro (e anche overall del sistema) e per ogni batch
         this.initGenerators();
-        this.initCenters(new int[]{4,4,4,4,4});
+        this.initCenters(new int[]{4,1,2,2,4});
         this.initEvents();
         double firstArriveSystem = 0;
         double lastDepartureSystem = 0;
@@ -493,7 +493,7 @@ public class Simulation {
         generateTrainArrivalEvent();
 
         //procede a processare gli eventi, finché non si supera il "close the door" e la lista degli eventi non viene svuotata
-        while (!closeTheDoor || !events.isEmpty()) {
+        while (true) {
             //estraggo il prossimo evento (in ordine di clock di simulazione)
             Event event = events.poll();
 
@@ -525,12 +525,13 @@ public class Simulation {
                 //produce l'arrivo successivo dall'esterno solo quando viene processato un arrivo "nuovo" (ossia dall'esterno, non conseguente a un completamento)
                 if (event.isExternal()) {
                     Event newArrival = generateArrivalEvent();
-                    if (newArrival.getTime() > STOP) {
+                    events.add(newArrival);
+                    /*if (newArrival.getTime() > STOP) {
                         t.last = t.current;
                         closeTheDoor = true;
                     } else {
                         events.add(newArrival);
-                    }
+                    }*/
                 }
 
                 //se il job è stato mandato in servizio produce l'evento di completamento
@@ -770,6 +771,7 @@ public class Simulation {
                 double[] avgNode = new double[numBatches];
                 double[] avgQueue = new double[numBatches];
                 double[] utilization = new double[numBatches];
+                double[] lossProbabilities = new double[numBatches];
                 for (int i = 0; i < numBatches; i++) {
                     Statistics currentStatistics = matrix[center.ID - 1][i];
                     avgInterrarivals[i] = currentStatistics.avgInterarrivals[0];
@@ -779,6 +781,7 @@ public class Simulation {
                     avgQueue[i] = currentStatistics.avgQueue[0];
                     //nei centri multiserver le utilizzazioni dei diversi server sono uguali per definizione, perciò possiamo considerare solo quelle del primo server
                     utilization[i] = currentStatistics.utilization[0];
+                    lossProbabilities[i] = currentStatistics.lossProbability;
                 }
                 //stampo gli intervalli di confidenza per le diverse statistiche di questo centro
                 System.out.println("For " + center.name + ":");
@@ -794,6 +797,10 @@ public class Simulation {
                 Estimate.estimate(avgQueue);
                 System.out.println("utilization:");
                 Estimate.estimate(utilization);
+                if (center instanceof MslsCenter) {
+                    System.out.println("loss Probability: ");
+                    Estimate.estimate(lossProbabilities);
+                }
                 System.out.println("autocorrelation between batches:");
                 //genera il file .dat da dare in input a acs per calcolo dell'autocorrelazione
                 generateDatFile(avgWait, center.name);
@@ -905,6 +912,10 @@ public class Simulation {
                 for (int i = 0; i < center.numServer; i++) {
                     centerStat.utilization[i] = center.getUtilization(i);
                 }
+                if (center instanceof MslsCenter) {
+                    centerStat.lossProbability = ((MslsCenter) center).getLossProbability();
+                }
+
             }
             //MsmqCenter ha uno slot per ogni coppia server-coda
             else if (center instanceof MsmqCenter) {
