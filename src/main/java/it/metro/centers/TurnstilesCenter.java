@@ -19,7 +19,7 @@ public class TurnstilesCenter extends MsmqCenter {
         //return (v.uniform(2.0, 10.0));
         //return v.exponential(0.5);
         double alfa = rvms.cdfExponential(5, 1);
-        double u = v.uniform(0, 1);
+        double u = v.uniform(alfa, 1);
         return rvms.idfExponential(5, u);
     }
 }

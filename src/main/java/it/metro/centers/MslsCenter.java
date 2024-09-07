@@ -160,4 +160,7 @@ public abstract class MslsCenter extends Center {
         return (lastArrive - firstArrive)/ arrivalJobs;
     }
 
+    public double getAvgService(int i) {
+        return servers.get(i).service / servers.get(i).served;
+    }
 }

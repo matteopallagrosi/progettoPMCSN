@@ -84,4 +84,6 @@ public abstract class Center {
 
     //ritorna l'utilizzazione dell'i-esimo server del centro
     public abstract double getUtilization(int i);
+
+    public abstract double getAvgService(int i);
 }

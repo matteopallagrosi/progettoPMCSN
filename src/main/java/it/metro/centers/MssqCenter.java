@@ -154,4 +154,8 @@ public abstract class MssqCenter extends Center {
     public double getUtilization(int i) {
         return servers.get(i).service / (lastDeparture - firstArrive);
     }
+
+    public double getAvgService(int i) {
+        return servers.get(i).service / servers.get(i).served;
+    }
 }

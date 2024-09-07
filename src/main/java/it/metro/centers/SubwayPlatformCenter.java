@@ -123,4 +123,11 @@ public class SubwayPlatformCenter extends Center {
     public double getUtilization(int i) {
         return 0;
     }
+
+    @Override
+    public double getAvgService(int i) {
+        return 0;
+    }
+
+
 }

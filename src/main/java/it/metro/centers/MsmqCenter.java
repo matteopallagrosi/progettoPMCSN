@@ -41,7 +41,7 @@ public abstract class MsmqCenter extends Center {
 
         //caso con ripartizione uniforme del flusso tra serventi (solo per verifica)
         //modifico il centro in modo da verificare se avendo Poisson in ingresso ho Poisson anche in uscita
-        v.rngs.selectStream(20);
+        /*v.rngs.selectStream(20);
         int chosenServer = (int)v.equilikely(0, numServer-1);
         if (servers.get(chosenServer).idle) {
             lastService = getService();
@@ -51,11 +51,11 @@ public abstract class MsmqCenter extends Center {
             numBusyServers++;
             lastArrive[chosenServer] = currentEvent.getTime();
             return chosenServer;
-        }
+        }*/
 
         //se è disponibile un server, il job viene immediatamente servito
         //ritorna l'indice del server per cui deve essere prodotto un tempo di completamento, altrimenti -1 se job va in coda
-        /*if (isSomeServerIdle()) {
+        if (isSomeServerIdle()) {
             int serverIndex = findIdleServer();
             Server selectedServer = servers.get(serverIndex);
             lastService = generateService(serverIndex);
@@ -66,14 +66,14 @@ public abstract class MsmqCenter extends Center {
             lastArrive[serverIndex] = currentEvent.getTime();
             //il controller produce un evento di completamento
             return serverIndex;
-        }*/
-        //altrimenti il job viene inserito in una delle code secondo la politica di accodamento creata
-        //int selectedQueue = selectQueue();
-        queues[chosenServer]++;
-        if (firstArrive[chosenServer] == 0) {
-            firstArrive[chosenServer] = currentEvent.getTime();
         }
-        lastArrive[chosenServer] = currentEvent.getTime();
+        //altrimenti il job viene inserito in una delle code secondo la politica di accodamento creata
+        int selectedQueue = selectQueue();
+        queues[selectedQueue]++;
+        if (firstArrive[selectedQueue] == 0) {
+            firstArrive[selectedQueue] = currentEvent.getTime();
+        }
+        lastArrive[selectedQueue] = currentEvent.getTime();
         return -1;
     }
 
@@ -223,10 +223,16 @@ public abstract class MsmqCenter extends Center {
             selectedQueue = (int)v.equilikely(0, numServer-1);
         }
         return selectedQueue;*/
-        int minValue = queues[0];
+        int minValue = 0;
+        for (int i = 0; i < queues.length; i++) {
+            if (servers.get(i).active) {
+                minValue = queues[i];
+                break;
+            }
+        }
         List<Integer> minIndices = new ArrayList<>();
 
-        // Trova il valore minimo e raccoglie gli indici delle sue posizione nell'array
+        // Trova il valore minimo e raccoglie gli indici delle sue posizioni nell'array
         for (int i = 0; i < queues.length; i++) {
             if (queues[i] < minValue && servers.get(i).active) {
                 minValue = queues[i];
@@ -297,6 +303,10 @@ public abstract class MsmqCenter extends Center {
 
     public double getUtilization(int i) {
         return servers.get(i).service / (lastDeparture[i] - firstArrive[i]);
+    }
+
+    public double getAvgService(int i) {
+        return servers.get(i).service / servers.get(i).served;
     }
 
     //i metodi sottostanti ritornano le statistiche globali dell'intero centro

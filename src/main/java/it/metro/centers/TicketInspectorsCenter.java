@@ -37,7 +37,7 @@ public class TicketInspectorsCenter extends MslsCenter {
         v.rngs.selectStream(50);
         //return v.exponential(0.5);
         double alfa = rvms.cdfExponential(10, 2);
-        double u = v.uniform(0, 1);
+        double u = v.uniform(alfa, 1);
         return rvms.idfExponential(10, u);
     }
 }

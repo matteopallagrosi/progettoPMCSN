@@ -18,8 +18,10 @@ public class ElevatorsCenter extends MssqCenter {
     public double getService() {
         v.rngs.selectStream(70);
         //return v.exponential(2);
-        double alfa = rvms.cdfNormal(20,1,0);
-        double u = v.uniform(alfa, 1);
+        double alfa = rvms.cdfNormal(20,1,15);
+        double beta = 1 - rvms.cdfNormal(20,1,25);
+        double u = v.uniform(alfa, 1- beta);
         return rvms.idfNormal(20,1, u);
+        //return rvms.idfExponential(20, u);
     }
 }
