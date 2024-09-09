@@ -26,11 +26,11 @@ public class Simulation {
     private ElevatorsCenter elevatorsCenter;
     private SubwayPlatformCenter subwayPlatformCenter;
     private Center[] centers;
-    private int maxNumTurnstiles = 4;
+    private int maxNumTurnstiles = 10;
     private int arrivalsTurtsiles = 0;
     private int arrivalsElectronic = 0;
     private int arrivalsTicket = 0;
-    private static double trainArrival = 0;
+    private double trainArrival = 0;
     Statistics[][] matrix = new Statistics[6][54];
     Rvms rvms;
     private int rejectedJob = 0;
@@ -483,7 +483,7 @@ public class Simulation {
         int batchIndex = 0;                                                     //tiene traccia del batch correntemente simulato
         Statistics[][] matrix = new Statistics[6][numBatches];                  //matrice che tiene traccia delle statistiche medie per ogni centro (e anche overall del sistema) e per ogni batch
         this.initGenerators();
-        this.initCenters(new int[]{3,1,1,1,1});
+        this.initCenters(new int[]{4,1,2,2,2});
         this.initEvents();
         double firstArriveSystem = 0;
         double lastDepartureSystem = 0;
@@ -806,7 +806,7 @@ public class Simulation {
                 generateDatFile(avgDelay, center.name, "avgDelay");
                 System.out.println("service:");
                 Estimate.estimate(avgService);
-                generateDatFile(avgDelay, center.name, "avgService");
+                generateDatFile(avgService, center.name, "avgService");
                 System.out.println("jobs in node:");
                 Estimate.estimate(avgNode);
                 generateDatFile(avgNode, center.name, "avgNode");
@@ -839,61 +839,63 @@ public class Simulation {
             else if (center instanceof  MsmqCenter) {
                 //per ogni coppia server-coda
                 for (int i = 0; i < center.numServer; i++) {
-                    double[] avgInterrarivals = new double[numBatches];
-                    double[] avgWait = new double[numBatches];
-                    double[] avgDelay = new double[numBatches];
-                    double[] avgService = new double[numBatches];
-                    double[] avgNode = new double[numBatches];
-                    double[] avgQueue = new double[numBatches];
-                    double[] utilization = new double[numBatches];
-                    double[] avgVisits = new double[numBatches];
-                    for (int j = 0; j < numBatches; j++) {
-                        Statistics currentStatistics = matrix[center.ID - 1][j];
-                        avgInterrarivals[j] = currentStatistics.avgInterarrivals[i];
-                        avgWait[j] = currentStatistics.avgWait[i];
-                        avgDelay[j] = currentStatistics.avgDelay[i];
-                        avgService[j] = currentStatistics.avgService[i];
-                        avgNode[j] = currentStatistics.avgNode[i];
-                        avgQueue[j] = currentStatistics.avgQueue[i];
-                        //nei centri multiserver le utilizzazioni dei diversi server sono uguali per definizione, perciò possiamo considerare solo quelle del primo server
-                        utilization[j] = currentStatistics.utilization[i];
-                        avgVisits[j] = (1 / currentStatistics.avgInterarrivals[i]) / arrivalRate;
+                    if (center.servers.get(i).active) {
+                        double[] avgInterrarivals = new double[numBatches];
+                        double[] avgWait = new double[numBatches];
+                        double[] avgDelay = new double[numBatches];
+                        double[] avgService = new double[numBatches];
+                        double[] avgNode = new double[numBatches];
+                        double[] avgQueue = new double[numBatches];
+                        double[] utilization = new double[numBatches];
+                        double[] avgVisits = new double[numBatches];
+                        for (int j = 0; j < numBatches; j++) {
+                            Statistics currentStatistics = matrix[center.ID - 1][j];
+                            avgInterrarivals[j] = currentStatistics.avgInterarrivals[i];
+                            avgWait[j] = currentStatistics.avgWait[i];
+                            avgDelay[j] = currentStatistics.avgDelay[i];
+                            avgService[j] = currentStatistics.avgService[i];
+                            avgNode[j] = currentStatistics.avgNode[i];
+                            avgQueue[j] = currentStatistics.avgQueue[i];
+                            //nei centri multiserver le utilizzazioni dei diversi server sono uguali per definizione, perciò possiamo considerare solo quelle del primo server
+                            utilization[j] = currentStatistics.utilization[i];
+                            avgVisits[j] = (1 / currentStatistics.avgInterarrivals[i]) / arrivalRate;
+                        }
+                        //stampo gli intervalli di confidenza per le diverse statistiche di questo centro
+                        System.out.println("For " + center.name + ", server-queue " + i + ":");
+                        System.out.println("interrarivals:");
+                        Estimate.estimate(avgInterrarivals);
+                        generateDatFile(avgInterrarivals, center.name + i, "avgInterrarivals");
+                        System.out.println("wait:");
+                        Estimate.estimate(avgWait);
+                        generateDatFile(avgWait, center.name + i, "avgWait");
+                        System.out.println("delay:");
+                        Estimate.estimate(avgDelay);
+                        generateDatFile(avgDelay, center.name + i, "avgDelay");
+                        System.out.println("service:");
+                        Estimate.estimate(avgService);
+                        generateDatFile(avgService, center.name + i, "avgService");
+                        System.out.println("jobs in node:");
+                        Estimate.estimate(avgNode);
+                        generateDatFile(avgNode, center.name + i, "avgNode");
+                        System.out.println("jobs in queue:");
+                        Estimate.estimate(avgQueue);
+                        generateDatFile(avgQueue, center.name + i, "avgQueue");
+                        System.out.println("utilization:");
+                        Estimate.estimate(utilization);
+                        generateDatFile(utilization, center.name + i, "utilization");
+                        System.out.println("visits:");
+                        Estimate.estimate(avgVisits);
+                        System.out.println("autocorrelation between batches:");
+                        //genera il file .dat da dare in input a acs per calcolo dell'autocorrelazione
+                        generateDatFile(avgWait, center.name + i, "autocorrelation");
+                        try {
+                            Acs.autocorrelation(center.name + i + "_" + "autocorrelation.dat");
+                        } catch (IOException e) {
+                            System.out.println("Autocorrelation failed");
+                        }
+                        File file = new File(center.name + i + "_autocorrelation.dat");
+                        file.delete();
                     }
-                    //stampo gli intervalli di confidenza per le diverse statistiche di questo centro
-                    System.out.println("For " + center.name + ", server-queue " + i + ":");
-                    System.out.println("interrarivals:");
-                    Estimate.estimate(avgInterrarivals);
-                    generateDatFile(avgInterrarivals, center.name + i, "avgInterrarivals");
-                    System.out.println("wait:");
-                    Estimate.estimate(avgWait);
-                    generateDatFile(avgWait, center.name + i, "avgWait");
-                    System.out.println("delay:");
-                    Estimate.estimate(avgDelay);
-                    generateDatFile(avgDelay, center.name + i, "avgDelay");
-                    System.out.println("service:");
-                    Estimate.estimate(avgService);
-                    generateDatFile(avgService, center.name + i, "avgService");
-                    System.out.println("jobs in node:");
-                    Estimate.estimate(avgNode);
-                    generateDatFile(avgNode, center.name + i, "avgNode");
-                    System.out.println("jobs in queue:");
-                    Estimate.estimate(avgQueue);
-                    generateDatFile(avgQueue, center.name + i, "avgQueue");
-                    System.out.println("utilization:");
-                    Estimate.estimate(utilization);
-                    generateDatFile(utilization, center.name + i, "utilization");
-                    System.out.println("visits:");
-                    Estimate.estimate(avgVisits);
-                    System.out.println("autocorrelation between batches:");
-                    //genera il file .dat da dare in input a acs per calcolo dell'autocorrelazione
-                    generateDatFile(avgWait, center.name + i, "autocorrelation");
-                    try {
-                        Acs.autocorrelation(center.name + i + "_" + "autocorrelation.dat");
-                    } catch (IOException e) {
-                        System.out.println("Autocorrelation failed");
-                    }
-                    File file = new File(center.name + i + "_autocorrelation.dat");
-                    file.delete();
                 }
             }
         }

@@ -14,7 +14,7 @@ public class InfiniteHorizonSimulation {
 
     public int numBatches;
     public int batchSize;
-    public double[] arrivalRates = {0.045, 0.303, 0.076, 0.606, 0.05, 0,273, 0.076};
+    public double[] arrivalRates = {0.045, 0.303, 0.076, 0.606, 0.05, 0.273, 0.076};
 
     //Tra le varie statistiche che la simulazione produce, calcoliamo anche l'autocorrelazione tra i batch con la libreria 'acs'
     //la batch size utilizzata deve avere un'autocorrelazione lag 1 < 0.2
@@ -36,7 +36,7 @@ public class InfiniteHorizonSimulation {
         //avendo scelto una certa configurazione per ogni centro
         Simulation simulation = new Simulation();
         //Setto il lambda per la fascia oraria corrente
-        simulation.setArrivalRate(arrivalRates[0]);
+        simulation.setArrivalRate(0.02);
         simulation.runInfiniteHorizonSimulation(numBatches, batchSize);
     }
 

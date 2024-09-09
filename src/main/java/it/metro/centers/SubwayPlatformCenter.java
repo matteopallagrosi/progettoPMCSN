@@ -9,7 +9,8 @@ import java.text.DecimalFormat;
 //rappresenta il centro della banchina della metro (singola coda, singolo server)
 public class SubwayPlatformCenter extends Center {
     public double lastArrive;                      //ultimo arrivo presso questo centro
-    final int capacity = 880;                      //rappresenta la capacità della banchina
+    //final int capacity = 880;                      //rappresenta la capacità della banchina
+    final int capacity = 10000;
     public double lastDeparture;
     final int seats = 1200;                        //numero di posti totali sul treno
 
