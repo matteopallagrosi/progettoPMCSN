@@ -4,11 +4,11 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Corretta simulazione batch">
+    <list default="true" id="44a662b0-efbc-4fa2-818a-c184a362a5cb" name="Changes" comment="Corrette statistiche simulazione orizzonte finito">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/SubwayPlatformCenter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/Center.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/Center.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/centers/MssqCenter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/centers/MssqCenter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/FiniteHorizonSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/FiniteHorizonSimulation.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/InfiniteHorizonSimulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/InfiniteHorizonSimulation.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/it/metro/controller/Simulation.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -184,7 +184,8 @@
       <workItem from="1725613271258" duration="18402000" />
       <workItem from="1725706605425" duration="14036000" />
       <workItem from="1725782602903" duration="29198000" />
-      <workItem from="1725873246416" duration="6607000" />
+      <workItem from="1725873246416" duration="9581000" />
+      <workItem from="1725888280608" duration="20270000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <option name="closed" value="true" />
@@ -354,7 +355,15 @@
       <option name="project" value="LOCAL" />
       <updated>1725736065341</updated>
     </task>
-    <option name="localTasksCounter" value="22" />
+    <task id="LOCAL-00022" summary="Corrette statistiche simulazione orizzonte finito">
+      <option name="closed" value="true" />
+      <created>1725879896302</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1725879896303</updated>
+    </task>
+    <option name="localTasksCounter" value="23" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -394,9 +403,24 @@
     <MESSAGE value="Aggiornati tassi di arrivo fasce orarie, distribuzioni tempi di servizio e probabilità di routing" />
     <MESSAGE value="Modificata condizione fine simulazione batch" />
     <MESSAGE value="Corretta simulazione batch" />
-    <option name="LAST_COMMIT_MESSAGE" value="Corretta simulazione batch" />
+    <MESSAGE value="Corrette statistiche simulazione orizzonte finito" />
+    <option name="LAST_COMMIT_MESSAGE" value="Corrette statistiche simulazione orizzonte finito" />
   </component>
   <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/it/metro/controller/FiniteHorizonSimulation.java</url>
+          <line>128</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/it/metro/centers/Center.java</url>
+          <line>65</line>
+          <option name="timeStamp" value="7" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
     <watches-manager>
       <configuration name="Application">
         <watch expression="simulations[127].matrix[1]" />

@@ -130,32 +130,53 @@ public abstract class MssqCenter extends Center {
     }
 
     public double getAvgInterarrival(int i) {
-        return (lastArrive - firstArrive) / completedJobs;
+        //Se ci sono stati almeno due arrivi
+        if (firstArrive != lastArrive) {
+            return (lastArrive - firstArrive) / completedJobs;
+        }
+        else return 0;
     }
 
     public double getAvgWait(int i) {
-        return area[0].node / completedJobs;
+        //Se c'è stato almeno un completamento
+        if (lastDeparture != 0) {
+            return area[0].node / completedJobs;
+        }
+        else return 0;
     }
 
     public double getAvgDelay(int i) {
-        return area[0].queue / completedJobs;
+        //Se c'è stato almeno un completamento
+        if (lastDeparture != 0) {
+            return area[0].queue / completedJobs;
+        }
+        else return 0;
     }
 
     public double getAvgNode(int i) {
-        return area[0].node / (lastDeparture - firstArrive);
+        //Se c'è stato almeno un arrivo
+        if (firstArrive != 0) {
+            return area[0].node / (lastDeparture - firstArrive);
+        }
+        //altrimenti la popolazione è rimasta costante
+        else return numJobs;
     }
 
     public double getAvgQueue(int i) {
-        return area[0].queue / (lastDeparture - firstArrive);
+        //Se c'è stato almeno un arrivo
+        if (firstArrive != 0) {
+            return area[0].queue / (lastDeparture - firstArrive);
+        }
+        else return numJobs - numBusyServers;
     }
 
 
     //ritorna l'utilizzazione dell'i-esimo server del centro
     public double getUtilization(int i) {
-        return servers.get(i).service / (lastDeparture - firstArrive);
+        return (servers.get(i).service != 0) ? (servers.get(i).service/ (lastDeparture - firstArrive)) : 0;
     }
 
     public double getAvgService(int i) {
-        return servers.get(i).service / servers.get(i).served;
+        return (servers.get(i).service != 0) ? (servers.get(i).service / servers.get(i).served) : 0;
     }
 }

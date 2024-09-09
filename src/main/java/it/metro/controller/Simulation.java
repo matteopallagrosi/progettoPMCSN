@@ -31,9 +31,11 @@ public class Simulation {
     private int arrivalsElectronic = 0;
     private int arrivalsTicket = 0;
     private double trainArrival = 0;
-    Statistics[][] matrix = new Statistics[6][54];
+    public int numSampling;
+    Statistics[][] matrix;
     Rvms rvms;
     private int rejectedJob = 0;
+    public int[] usersOnPlatform;
 
     //Run simulation
     public static void main(String[] args) {
@@ -81,6 +83,10 @@ public class Simulation {
 
     public void setStop(double stopTime) {
         this.STOP = stopTime;
+    }
+
+    public void setNumSampling(int numSampling) {
+        this.numSampling = numSampling;
     }
 
     //inizializza la lista degli eventi, mantenuta ordinata secondo il clock degli eventi
@@ -382,8 +388,8 @@ public class Simulation {
     //genera gli eventi di campionamento (con cui periodicamente avviene la raccolta delle statistiche)
     //aggiunge questi eventi alla lista degli eventi ordinata
     private void generateSamplingEvents() {
-        //vengono prodotti 54 eventi di campionamento (uno ogni 20 minuti)
-        for(int t = 1200; t <= 64800; t += 1200) {
+        //vengono prodotti 108 eventi di campionamento (uno ogni 10 minuti)
+        for(int t = 600; t <= 64800; t += 600) {
             Event event = new Event(EventType.SAMPLING, t);
             events.add(event);
         }
@@ -602,7 +608,7 @@ public class Simulation {
     public void runFiniteHorizonSimulation(int[][] configCenters, double[] slotRates) {
         int jobsProcessed = 0;                                  //jobs processati nel sampling corrente
         int samplingIndex = 0;                                  //tiene traccia dello slot di sampling correntemente simulato
-        //matrice che tiene traccia delle statistiche medie per ogni centro (e anche overall del sistema) e per ogni slot di sampling
+        matrix = new Statistics[6][numSampling];                //matrice che tiene traccia delle statistiche medie per ogni centro (e anche overall del sistema) e per ogni slot di sampling
 
         //inizializza i centri con la configurazione della prima fascia oraria
         this.initCenters(configCenters[0]);
@@ -1035,6 +1041,8 @@ public class Simulation {
                 center.area[0].node = 0;
                 center.area[0].queue = 0;
                 ((MssqCenter)center).firstArrive = 0;
+                ((MssqCenter) center).lastArrive = 0;
+                ((MssqCenter) center).lastDeparture = 0;
                 for (int i = 0; i < center.numServer; i++) {
                     center.servers.get(i).service = 0;
                     center.servers.get(i).served = 0;
@@ -1048,6 +1056,8 @@ public class Simulation {
                     center.area[i].node = 0;
                     center.area[i].queue = 0;
                     ((MsmqCenter)center).firstArrive[i] = 0;
+                    ((MsmqCenter) center).lastArrive[i] = 0;
+                    ((MsmqCenter) center).lastDeparture[i] = 0;
                 }
             }
             else if (center instanceof MslsCenter) {
@@ -1056,6 +1066,8 @@ public class Simulation {
                 ((MslsCenter) center).rejectedJob = 0;
                 center.area[0].node = 0;
                 ((MslsCenter)center).firstArrive = 0;
+                ((MslsCenter) center).lastArrive = 0;
+                ((MslsCenter) center).lastDeparture = 0;
                 for (int i = 0; i < center.numServer; i++) {
                     center.servers.get(i).service = 0;
                     center.servers.get(i).served = 0;

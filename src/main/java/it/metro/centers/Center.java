@@ -58,8 +58,12 @@ public abstract class Center {
     protected int findIdleServer() {
         int s;
         int i = 0;
-        while (!servers.get(i).idle) {
-            i++;
+        try {
+            while (!servers.get(i).idle) {
+                i++;
+            }
+        } catch (IndexOutOfBoundsException e) {
+            System.out.println("BHO");
         }
         s = i;
         i++;

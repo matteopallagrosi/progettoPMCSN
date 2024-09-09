@@ -15,6 +15,7 @@ import java.io.IOException;
 public class FiniteHorizonSimulation {
 
     private final int NUM_REPLICATIONS = 128;
+    private final int NUM_SAMPLING = 108;
     Simulation[] simulations = new Simulation[NUM_REPLICATIONS];
 
     public static void main(String[] args) {
@@ -33,7 +34,7 @@ public class FiniteHorizonSimulation {
 
         //configurazione dei centri (numero server per ogni centro) nelle diverse fasce orarie
         //ogni riga corrisponde a una fascia oraria, l'i-esima colonna di una riga corrisponde al numero di server in quella fascia per l'i-esimo centro
-        int[][] configCenters = new int[][] {{3,1,1,1,1}, {20,3,3,2,1}, {5,1,1,1,1}, {42,6,5,7,1}, {4,1,1,1,1}, {19,3,2,2,1}, {5,1,1,1,1}};;
+        int[][] configCenters = new int[][] {{5,1,1,1,1}, {18,3,3,2,1}, {7,1,1,1,1}, {34,5,5,7,1}, {7,2,1,1,1}, {16,3,2,2,1}, {5,1,1,1,1}};;
         //int[][] configCenters = new int[][] {{4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}, {4,4,4,4,4}};
 
         //tassi di arrivo di ognuna delle fasce orarie
@@ -43,6 +44,7 @@ public class FiniteHorizonSimulation {
         for (int i = 0; i < NUM_REPLICATIONS; i++) {
             System.out.println("Replica n. " + (i+1));
             Simulation simulation = new Simulation();
+            simulation.setNumSampling(NUM_SAMPLING);
             simulation.rvms = new Rvms();
             //gli stati iniziali di ciascuno stream saranno gli stati finali della replica precedente
             simulation.initSeed(r, v);
@@ -58,11 +60,11 @@ public class FiniteHorizonSimulation {
         //costruisco la matriche che contiene le statistiche mediate su tutte le repliche
         //la matrice ha una riga per ogni centro, e una colonna per ogni slot di campionamento
         //contiene per ogni centro e slot di campionamento la media su tutte le repliche di ogni statistica di quel centro
-        Statistics[][] matrix = new Statistics[6][54];
+        Statistics[][] matrix = new Statistics[6][NUM_SAMPLING];
         //per ogni centro (+ overall del sistema)
         for (int i = 0; i < 6; i++) {
             //per ogni slot di campionamento
-            for (int j = 0; j < 54; j++) {
+            for (int j = 0; j < NUM_SAMPLING; j++) {
                 Statistics currentStat = new Statistics(1);
                 //per ogni replica
                 for (int k = 0; k < NUM_REPLICATIONS; k++) {
@@ -81,22 +83,22 @@ public class FiniteHorizonSimulation {
 
                 }
                 //media su tutte le repliche
-                currentStat.avgWait[0] = currentStat.avgWait[0] / NUM_REPLICATIONS;
-                currentStat.avgNode[0] =  currentStat.avgNode[0] / NUM_REPLICATIONS;
+                currentStat.avgWait[0] = (currentStat.avgWait[0] != 0) ?  (currentStat.avgWait[0] / NUM_REPLICATIONS) : 0;
+                currentStat.avgNode[0] =  (currentStat.avgNode[0] != 0) ?  (currentStat.avgNode[0] / NUM_REPLICATIONS) : 0;
                 if (i != 5) {
-                    currentStat.avgDelay[0] = currentStat.avgDelay[0] / NUM_REPLICATIONS;
-                    currentStat.avgInterarrivals[0] = currentStat.avgInterarrivals[0] / NUM_REPLICATIONS;
-                    currentStat.avgQueue[0] = currentStat.avgQueue[0] / NUM_REPLICATIONS;
-                    currentStat.utilization[0] = currentStat.utilization[0] / NUM_REPLICATIONS;
+                    currentStat.avgDelay[0] = (currentStat.avgDelay[0] != 0) ?  (currentStat.avgDelay[0] / NUM_REPLICATIONS) : 0;
+                    currentStat.avgInterarrivals[0] = (currentStat.avgInterarrivals[0] != 0) ?  (currentStat.avgInterarrivals[0] / NUM_REPLICATIONS) : 0;
+                    currentStat.avgQueue[0] = (currentStat.avgQueue[0] != 0) ?  (currentStat.avgQueue[0] / NUM_REPLICATIONS) : 0;
+                    currentStat.utilization[0] = (currentStat.utilization[0] != 0) ?  (currentStat.utilization[0] / NUM_REPLICATIONS) : 0;
                 }
                 if (i == 3) {
-                    currentStat.lossProbability = currentStat.lossProbability / NUM_REPLICATIONS;
+                    currentStat.lossProbability = (currentStat.lossProbability != 0) ?  (currentStat.lossProbability / NUM_REPLICATIONS) : 0;
                 }
                 matrix[i][j] = currentStat;
             }
         }
 
-        generateSamplingEstimate(matrix, 54);
+        generateSamplingEstimate(matrix, NUM_SAMPLING);
     }
 
     private void generateSamplingEstimate(Statistics[][] matrix, int numSampling) {
